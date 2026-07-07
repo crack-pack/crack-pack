@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>crackpack — Alpha pack opener</title>
+<style>
+  :root { --bg:#0e0f13; --panel:#171922; --ink:#eef1f7; --muted:#9aa3b2;
+          --common:#c9ccd6; --uncommon:#9fb6d6; --rare:#e6b455; --line:#262a36; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:radial-gradient(1200px 600px at 50% -10%, #1c2030, var(--bg)); color:var(--ink);
+         font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  header { padding:28px 20px 8px; text-align:center; }
+  h1 { margin:0; font-size:22px; letter-spacing:.5px; }
+  h1 span { color:var(--rare); }
+  .sub { color:var(--muted); font-size:13px; margin-top:4px; }
+  .controls { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; padding:16px; }
+  input { background:var(--panel); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:9px 11px; width:120px; }
+  button { background:var(--rare); color:#241a06; border:0; border-radius:8px; padding:10px 16px; font-weight:700; cursor:pointer; }
+  button.ghost { background:var(--panel); color:var(--ink); border:1px solid var(--line); }
+  button:active { transform:translateY(1px); }
+  .meta { text-align:center; color:var(--muted); font-size:12px; min-height:18px; }
+  .pack { max-width:1100px; margin:8px auto 32px; padding:0 16px; }
+  .group-label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.14em; margin:18px 0 8px; border-bottom:1px solid var(--line); padding-bottom:6px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .card { position:relative; aspect-ratio:5/7; border-radius:11px; overflow:hidden; background:var(--panel);
+          border:1px solid var(--line); box-shadow:0 6px 18px rgba(0,0,0,.35); animation:pop .28s ease both; }
+  .card img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; z-index:1; }
+  .card .fallback { position:absolute; inset:0; z-index:0; display:flex; align-items:center; justify-content:center; text-align:center;
+                    padding:10px; font-weight:600; color:var(--ink); background:linear-gradient(160deg,#20232f,#12141c); }
+  .card.rare { box-shadow:0 0 0 1px var(--rare), 0 8px 26px rgba(230,180,85,.28); }
+  .name { position:absolute; bottom:0; left:0; right:0; z-index:2; padding:6px 8px; font-size:12px; background:linear-gradient(transparent,rgba(0,0,0,.82)); }
+  .land-pill { font-size:10px; color:var(--muted); }
+  @keyframes pop { from { opacity:0; transform:translateY(8px) scale(.98); } to { opacity:1; transform:none; } }
+  .dbg { position:absolute; top:8px; left:6px; right:6px; z-index:4; display:none;
+         font:10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; background:rgba(6,8,14,.86); color:#bfe0ff;
+         padding:5px 7px; border-radius:6px; border:1px solid rgba(120,160,220,.4); }
+  body.debug-on .dbg { display:block; }
+  #dbgpanel { display:none; max-width:1100px; margin:4px auto 0; padding:0 16px; }
+  body.debug-on #dbgpanel { display:block; }
+  .dbgcard { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:11px 13px;
+             font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted); }
+  .dbgcard b { color:var(--ink); }
+  button.on { background:var(--rare); color:#241a06; }
+  .boxpack { max-width:1100px; margin:14px auto 0; padding:10px 16px; }
+  .boxhead { display:flex; align-items:baseline; gap:10px; margin-bottom:7px; }
+  .boxhead .pn { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.12em; }
+  .boxhead .rarename { color:var(--rare); font-weight:700; font-size:13px; }
+  .boxrow { display:grid; grid-template-columns:repeat(15,1fr); gap:5px; }
+  .mini { position:relative; aspect-ratio:5/7; border-radius:5px; overflow:hidden; background:var(--panel); border:1px solid var(--line); }
+  .mini img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .mini.common { box-shadow:inset 0 2px 0 var(--common); } .mini.uncommon { box-shadow:inset 0 2px 0 var(--uncommon); } .mini.rare { box-shadow:inset 0 0 0 1px var(--rare); }
+  @media (max-width:720px){ .boxrow { grid-template-columns:repeat(8,1fr); } }
+  footer { text-align:center; color:var(--muted); font-size:11px; padding:0 16px 30px; }
+  a { color:var(--muted); }
+</style>
+</head>
+<body>
+  <header>
+    <h1><span>crackpack</span> · Limited Edition Alpha</h1>
+    <div class="sub">Deterministic striped collation — stripe cycle 2,3,4,5 · packs cut pack-aligned from the print sheets</div>
+  </header>
+  <div class="controls">
+    <button id="m_pack" class="ghost on">Booster pack</button>
+    <button id="m_box" class="ghost">Booster box (36)</button>
+    <button id="m_starter" class="ghost">Starter deck (60)</button>
+    <button id="m_starterbox" class="ghost">Starter box (10)</button>
+  </div>
+  <div class="controls">
+    <button id="first" class="ghost">⏮ First</button>
+    <button id="prev" class="ghost">‹ Prev</button>
+    <label style="color:var(--muted);font-size:13px"><span id="pnlabel">pack&nbsp;#</span><input id="packno" type="number" min="0" value="0" /></label>
+    <button id="next" class="ghost">Next ›</button>
+    <button id="random">Random</button>
+    <button id="debug" class="ghost">Debug</button>
+  </div>
+  <div class="meta" id="meta"></div>
+  <div id="dbgpanel"></div>
+  <div class="pack" id="pack"></div>
+  <footer>
+    A <b>crackpack</b> demo. Card images &amp; data via <a href="https://scryfall.com" target="_blank" rel="noopener">Scryfall</a>;
+    Magic: The Gathering is © Wizards of the Coast. Collation model from <a href="https://www.lethe.xyz/mtg/collation/" target="_blank" rel="noopener">The Collation Project</a>.
+  </footer>
+
+<script>
+const SHEETS = {"_comment":"Limited Edition Alpha (LEA) print sheets, 11x11 (121 slots) each, row-major (top-to-bottom, left-to-right), exactly as they sit on the physical sheet. Basic lands carry their variant in parens: (A) or (B). Sources: common sheet from The Collation Project (lethe.xyz); uncommon & rare sheets from Steven's observation data (confirmed). Orientation confirmed: row 1 = top edge, column 1 = left edge, row-major. Rare sheet largely matches the Beta rare sheet; the one Alpha difference is that a basic Island (Scryfall lea/288 = Island (A), Mark Poole) sits where Beta had Volcanic Island. Land A/B convention: lower Scryfall collector number = (A) (Island 288=A/289=B; Mountain 292=A/293=B). NOTE: uncommon row 7 col 11 was originally recorded 'Mountain (C)'; resolved to Mountain (B) = Scryfall lea/293 (Douglas Shuler). Alpha has exactly two Mountains, cn 292 (A) and 293 (B).","common":[["Swamp (A)","Howl from Beyond","Mountain (A)","Lightning Bolt","Forest (A)","Giant Spider","Plains (A)","Death Ward","Unsummon","Island (A)","Sea Serpent"],["Sinkhole","Swamp (B)","Frozen Shade","Swamp (A)","Mountain (B)","Shatter","Hill Giant","War Mammoth","Wall of Wood","Forest (B)","Giant Growth"],["Plains (A)","Forest (B)","Benalish Hero","Plains (B)","Island (A)","Twiddle","Power Sink","Fear","Swamp (B)","Plague Rats","Dark Ritual"],["False Orders","Mountain (A)","Red Elemental Blast","Ironclaw Orcs","Llanowar Elves","Scryb Sprites","Forest (A)","Plains (B)","Guardian Angel","Circle of Protection: Blue","Plains (A)"],["Power Leak","Prodigal Sorcerer","Island (B)","Jump","Unholy Strength","Drudge Skeletons","Swamp (A)","Mountain (B)","Mons's Goblin Raiders","Fireball","Mountain (A)"],["Tranquility","Ironroot Treefolk","Forest (B)","Wild Growth","Plains (B)","Healing Salve","Circle of Protection: Red","Invisibility","Island (B)","Island (A)","Creature Bond"],["Paralyze","Terror","Swamp (B)","Scathe Zombies","Firebreathing","Dwarven Warriors","Mountain (B)","Forest (A)","Stream of Life","Grizzly Bears","Forest (B)"],["Holy Armor","Plains (A)","Mesa Pegasus","Circle of Protection: White","Spell Blast","Island (B)","Merfolk of the Pearl Trident","Swamp (A)","Pestilence","Swamp (B)","Raise Dead"],["Mountain (B)","Hurloon Minotaur","Disintegrate","Mountain (A)","Regeneration","Forest (A)","Shanodin Dryads","Pearled Unicorn","Plains (B)","Disenchant","Holy Strength"],["Island (B)","Phantasmal Terrain","Blue Elemental Blast","Island (A)","Drain Life","Swamp (A)","Weakness","Earthbind","Mountain (A)","Gray Ogre","Stone Rain"],["Fog","Forest (A)","Craw Wurm","Forest (B)","Samite Healer","Plains (A)","Circle of Protection: Green","Island (A)","Psychic Venom","Flight","Island (B)"]],"uncommon":[["Swamp (A)","Nettling Imp","Demonic Tutor","Mountain (A)","Stone Giant","Orcish Oriflamme","Rod of Ruin","Berserk","Library of Leng","White Knight","Black Ward"],["Control Magic","Feedback","Throne of Bone","Animate Dead","Wall of Bone","Swamp (A)","Deathgrip","Burrowing","Living Wall","Mountain (A)","Keldon Warlord"],["Instill Energy","Thicket Basilisk","Forest (A)","Castle","Ivory Cup","Plains (B)","Swords to Plowshares","Lifetap","Island (A)","Steal Artifact","Counterspell"],["Swamp (B)","Sengir Vampire","Evil Presence","Earth Elemental","Mountain (B)","Iron Star","Wall of Stone","Copper Tablet","Hurricane","Tsunami","Forest (B)"],["Lure","Obsianus Golem","White Ward","Conversion","Plains (A)","Icy Manipulator","Clone","Animate Artifact","Swamp (B)","Bog Wraith","Simulacrum"],["Orcish Artillery","Flashfires","Basalt Monolith","Forest (A)","Wall of Ice","Ice Storm","Conservator","Serra Angel","Plains (A)","Consecrate Land","Sol Ring"],["Air Elemental","Island (B)","Wall of Air","Swamp (B)","Gloom","Scavenging Ghoul","Sacrifice","Soul Net","Wall of Fire","Fire Elemental","Mountain (B)"],["Forest (B)","Ley Druid","Regrowth","Blue Ward","Jade Statue","Plains (B)","Lance","Water Elemental","Wall of Water","Glasses of Urza","Uthden Troll"],["Tunnel","Mountain (B)","Dragon Whelp","Wooden Sphere","Forest (A)","Lifeforce","Wanderlust","Plains (A)","Celestial Prism","Wall of Swords","Resurrection"],["Red Ward","Siren's Call","Phantom Monster","Black Vise","Cursed Land","Black Knight","Swamp (A)","Hypnotic Specter","Dwarven Demolition Team","Mountain (B)","Goblin Balloon Brigade"],["Camouflage","Channel","Forest (B)","Wall of Brambles","Juggernaut","Karma","Plains (B)","Green Ward","Crystal Rod","Phantasmal Forces","Psionic Blast"]],"rare":[["Winter Orb","Nightmare","Jade Monolith","Manabarbs","Mox Emerald","Elvish Archers","Sunglasses of Urza","Animate Wall","Tundra","Sleight of Mind","Chaos Orb"],["Lifelace","Savannah","Righteousness","Ancestral Recall","Black Lotus","Bad Moon","Mox Sapphire","Raging River","Fungusaur","Northern Paladin","Magical Hack"],["Cockatrice","Mox Ruby","Blaze of Glory","Disrupting Scepter","Lord of the Pit","Mana Flare","Taiga","Natural Selection","Crusade","Mana Short","Birds of Paradise"],["Cyclopean Tomb","Contract from Below","Badlands","Granite Gargoyle","Mox Pearl","Timber Wolves","Meekstone","Savannah Lions","Vesuvan Doppelganger","Word of Command","Forcefield"],["Chaoslace","The Hive","Lord of Atlantis","Warp Artifact","Roc of Kher Ridges","Force of Nature","Farmstead","Mahamoti Djinn","Island (A)","Volcanic Eruption","Island (B)"],["Lich","Zombie Master","Ankh of Mishra","Tropical Island","Deathlace","Smoke","Gaea's Liege","Island (B)","Balance","Pirate Ship","Island Sanctuary"],["Gauntlet of Might","Demonic Attorney","Howling Mine","Bayou","Fork","Goblin King","Illusionary Mask","Living Lands","Personal Incarnation","Thoughtlace","Mox Jet"],["Mana Vault","Demonic Hordes","Scrubland","Earthquake","Helm of Chatzuk","Verduran Enchantress","Purelace","Kormus Bell","Copy Artifact","Clockwork Beast","Sedge Troll"],["Jayemdae Tome","Island (A)","Nevinyrral's Disk","Royal Assassin","Two-Headed Giant of Foriys","Plateau","Living Artifact","Time Vault","Reverse Damage","Drain Power","Island (A)"],["Will-o'-the-Wisp","Shivan Dragon","Kudzu","Blessing","Time Walk","Nether Shadow","Rock Hydra","Fastbond","Veteran Bodyguard","Braingeyser","Stasis"],["Mind Twist","Power Surge","Web","Wrath of God","Underground Sea","Dingus Egg","Darkpact","Wheel of Fortune","Aspect of Wolf","Armageddon","Timetwister"]]};
+
+const CYCLE = [2, 3, 4, 5];
+const LAYOUTS = {
+  booster: [ ['common', 11], ['uncommon', 3], ['rare', 1] ],   // 15-card booster
+  starter: [ ['common', 45], ['uncommon', 13], ['rare', 2] ],  // 60-card starter deck
+};
+const LAYOUT = LAYOUTS.booster;
+const LAND = /^(Plains|Island|Swamp|Mountain|Forest) \(([A-Z])\)$/;
+const mod = (n, m) => ((n % m) + m) % m;
+
+function makeRng(seed) {
+  let a = seed >>> 0;
+  const nextFloat = () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  return { nextFloat, int: (mn, mx) => mn + Math.floor(nextFloat() * (mx - mn + 1)) };
+}
+function parseCell(raw) {
+  const m = LAND.exec(raw);
+  if (!m) return { name: raw, isBasicLand: false };
+  const v = m[2];
+  return (v === 'A' || v === 'B') ? { name: m[1], isBasicLand: true, variant: v } : { name: m[1], isBasicLand: true };
+}
+function grid(sheet) { return SHEETS[sheet].map((row) => row.map(parseCell)); }
+function cyclicWidths(cycle) { let i = 0; return () => cycle[i++ % cycle.length]; }
+function stripedWalk(g, nextWidth) {
+  const rows = g.length, cols = g[0].length;
+  let bandStartRow = rows - 1, col = cols - 1, k = 0, width = nextWidth();
+  let stripeIndex = 0, pos = 0;
+  return () => {
+    const row = mod(bandStartRow - k, rows);
+    const out = { card: g[row][col], col: col + 1, row: row + 1, stripeIndex, width, pos };
+    pos += 1; k += 1;
+    if (k >= width) { k = 0; col -= 1; if (col < 0) { col = cols - 1; bandStartRow = mod(bandStartRow - width, rows); width = nextWidth(); stripeIndex += 1; } }
+    return out;
+  };
+}
+function stripedPeriod(cycle, rows, cols) {
+  let bandStartRow = rows - 1, stripeIdx = 0, cards = 0;
+  for (let guard = 0; guard < 1000000; guard++) {
+    const w = cycle[stripeIdx % cycle.length];
+    cards += cols * w; bandStartRow = mod(bandStartRow - w, rows); stripeIdx += 1;
+    if (bandStartRow === rows - 1 && stripeIdx % cycle.length === 0) return cards;
+  }
+  return cards;
+}
+function assemble(count, startIndex, layout) {
+  layout = layout || LAYOUTS.booster;
+  const perPack = new Map(); for (const [s, n] of layout) perPack.set(s, (perPack.get(s) || 0) + n);
+  const period = stripedPeriod(CYCLE, 11, 11);
+  const N = ((startIndex % period) + period) % period;
+  const streams = new Map(); const starts = [];
+  for (const [sheet] of layout) {
+    if (streams.has(sheet)) continue;
+    const next = stripedWalk(grid(sheet), cyclicWidths(CYCLE));
+    const group = perPack.get(sheet);
+    const skip = group * N; // all sheets share the unit index N (phase-locked)
+    for (let i = 0; i < skip; i++) next();
+    streams.set(sheet, next);
+    starts.push({ sheet, group, period, skip });
+  }
+  const packs = [];
+  for (let p = 0; p < count; p++) {
+    const pack = [];
+    for (const [sheet, n] of layout) {
+      const next = streams.get(sheet);
+      for (let i = 0; i < n; i++) {
+        const e = next();
+        pack.push({ name: e.card.name, isBasicLand: e.card.isBasicLand, variant: e.card.variant, fromSheet: sheet, pos: e.pos, col: e.col, row: e.row, stripeIndex: e.stripeIndex, width: e.width });
+      }
+    }
+    packs.push(pack);
+  }
+  return { packs, starts, startPack: N, period };
+}
+function openPacks(count, startIndex) { return assemble(count, startIndex, LAYOUTS.booster).packs; }
+function label(c) { return c.isBasicLand && c.variant ? c.name + ' (' + c.variant + ')' : c.name; }
+
+
+const SLOTS = [['common','Commons'],['uncommon','Uncommons'],['rare','Rare']];
+const IMG_MAP = {"Animate Wall":"https://cards.scryfall.io/normal/front/d/5/d5c83259-9b90-47c2-b48e-c7d78519e792.jpg?1782723019","Armageddon":"https://cards.scryfall.io/normal/front/5/b/5b6ddce7-b9c5-431d-a0b0-46d4aa93cbcb.jpg?1782723019","Balance":"https://cards.scryfall.io/normal/front/6/f/6f9ea46a-411f-40ce-a873-a905180093f4.jpg?1782723017","Benalish Hero":"https://cards.scryfall.io/normal/front/1/1/11600105-56c6-4073-a4a6-8469030b39c9.jpg?1782723017","Black Ward":"https://cards.scryfall.io/normal/front/1/5/15967a39-303f-457d-bcde-51837c8d63e1.jpg?1782723016","Blaze of Glory":"https://cards.scryfall.io/normal/front/9/8/98fba951-c5bb-497c-9292-ce1b2a1e1247.jpg?1782723016","Blessing":"https://cards.scryfall.io/normal/front/f/1/f131fd27-18da-47ca-b59f-135bcac83abd.jpg?1782723015","Blue Ward":"https://cards.scryfall.io/normal/front/9/3/93f9f0f2-e1cc-4740-888c-1336c6de0a27.jpg?1782723015","Castle":"https://cards.scryfall.io/normal/front/b/0/b0da8d56-3178-44c2-9344-95d2346d326f.jpg?1782723014","Circle of Protection: Blue":"https://cards.scryfall.io/normal/front/8/4/848b1a7f-e8ba-40b5-92b7-af1e963a0319.jpg?1782723015","Circle of Protection: Green":"https://cards.scryfall.io/normal/front/1/a/1ae32d20-b438-4f43-b603-e8f706ecfb03.jpg?1782723014","Circle of Protection: Red":"https://cards.scryfall.io/normal/front/b/3/b3dd94c5-42f6-4148-be6e-2a3a4226cc0e.jpg?1782723014","Circle of Protection: White":"https://cards.scryfall.io/normal/front/9/2/92df19c9-e127-42d9-8dd2-7fa5a7095428.jpg?1782723013","Consecrate Land":"https://cards.scryfall.io/normal/front/d/2/d2379f78-c03f-447f-b3c9-10a918d556e9.jpg?1782723013","Conversion":"https://cards.scryfall.io/normal/front/1/3/13186bc9-8d9c-433b-ba15-121ef94dd68a.jpg?1782723011","Crusade":"https://cards.scryfall.io/normal/front/0/5/057986c7-20c0-4157-b4df-beae4ef5c66d.jpg?1782723011","Death Ward":"https://cards.scryfall.io/normal/front/f/a/fa5466cc-aa57-4a7f-8b21-d92b2fe02e13.jpg?1782723010","Disenchant":"https://cards.scryfall.io/normal/front/2/7/2722d7e2-61c6-4934-9c21-875ee78fd06c.jpg?1782723010","Farmstead":"https://cards.scryfall.io/normal/front/3/4/3455b006-9ea5-4aef-8ad2-d0701eb0cacf.jpg?1782723010","Green Ward":"https://cards.scryfall.io/normal/front/1/f/1f6118b2-fe01-425a-a2ed-6d7c42286c8e.jpg?1782723009","Guardian Angel":"https://cards.scryfall.io/normal/front/0/f/0f84d676-5327-454c-a033-b4498a9d28e2.jpg?1782723009","Healing Salve":"https://cards.scryfall.io/normal/front/e/2/e28de37e-84d5-4dc7-b36c-e14da5924729.jpg?1782723009","Holy Armor":"https://cards.scryfall.io/normal/front/b/0/b01041d2-687e-4972-81c8-16690809275b.jpg?1782723008","Holy Strength":"https://cards.scryfall.io/normal/front/e/9/e945a4cd-0eb1-4f54-898d-169ce2748a03.jpg?1782723008","Island Sanctuary":"https://cards.scryfall.io/normal/front/c/1/c15e8a42-89de-42bc-8d5f-33426d207c3a.jpg?1782723008","Karma":"https://cards.scryfall.io/normal/front/6/f/6f30ad61-fcb7-4d55-ba86-94de1bf545e4.jpg?1782723008","Lance":"https://cards.scryfall.io/normal/front/d/d/ddb633f5-cc4d-4157-8217-def90cb15e24.jpg?1782723005","Mesa Pegasus":"https://cards.scryfall.io/normal/front/e/a/eaac88da-d19e-4771-944c-3709963d04e7.jpg?1782723005","Northern Paladin":"https://cards.scryfall.io/normal/front/6/3/6303233b-35eb-49ca-b844-ba6b9fe1cbd2.jpg?1782723005","Pearled Unicorn":"https://cards.scryfall.io/normal/front/6/d/6daf1aab-1e58-4a5a-bc66-cb3f7c86e0e8.jpg?1782723004","Personal Incarnation":"https://cards.scryfall.io/normal/front/c/a/caf9cef4-0f2d-478a-b119-fe1967687f74.jpg?1782723004","Purelace":"https://cards.scryfall.io/normal/front/2/f/2facf462-55cd-4da4-997f-2cf4add75628.jpg?1782723004","Red Ward":"https://cards.scryfall.io/normal/front/e/0/e0c64c01-c2aa-470b-88c6-3d3e4a969649.jpg?1782723004","Resurrection":"https://cards.scryfall.io/normal/front/4/f/4fff6e6f-4ebd-4ec8-9443-59efb22d376c.jpg?1782723003","Reverse Damage":"https://cards.scryfall.io/normal/front/9/4/943baea8-b173-4863-a3ab-dd217d483cd9.jpg?1782723003","Righteousness":"https://cards.scryfall.io/normal/front/d/0/d0ba7b76-f3d0-47d0-8a35-0c08e67200fb.jpg?1782723002","Samite Healer":"https://cards.scryfall.io/normal/front/e/f/efba235e-04e5-449c-906c-0ac33f6d7929.jpg?1782723002","Savannah Lions":"https://cards.scryfall.io/normal/front/d/0/d05b92bd-797e-413f-a8b0-32e0937a1ee0.jpg?1782723001","Serra Angel":"https://cards.scryfall.io/normal/front/f/8/f8ac5006-91bd-4803-93da-f87cf196dd2f.jpg?1782722999","Swords to Plowshares":"https://cards.scryfall.io/normal/front/3/8/386ea9eb-abc1-4862-aa2d-8fb808d79490.jpg?1782722999","Veteran Bodyguard":"https://cards.scryfall.io/normal/front/c/b/cbd9ab01-a833-4fa4-8dee-151bd9800835.jpg?1782722999","Wall of Swords":"https://cards.scryfall.io/normal/front/9/9/99ec4723-b36c-4015-b361-736a6523e8f5.jpg?1782722998","White Knight":"https://cards.scryfall.io/normal/front/5/0/50abfba8-c9f9-4ebf-965a-4b425fe83129.jpg?1782722998","White Ward":"https://cards.scryfall.io/normal/front/4/9/49b22665-1501-420a-82ad-f71f6768bcf8.jpg?1782722998","Wrath of God":"https://cards.scryfall.io/normal/front/a/2/a2788d69-6a3a-42f0-8736-cc6b57755ecd.jpg?1782722998","Air Elemental":"https://cards.scryfall.io/normal/front/6/9/69c3b2a3-0daa-4d42-832d-fcdfda6555ea.jpg?1782722998","Ancestral Recall":"https://cards.scryfall.io/normal/front/7/0/70e7ddf2-5604-41e7-bb9d-ddd03d3e9d0b.jpg?1782722997","Animate Artifact":"https://cards.scryfall.io/normal/front/6/6/664b46f5-0424-4f4e-9f26-6bd2cf5e0357.jpg?1782722997","Blue Elemental Blast":"https://cards.scryfall.io/normal/front/2/0/20d666ef-39bf-4fbf-8201-5f1056539da2.jpg?1782722996","Braingeyser":"https://cards.scryfall.io/normal/front/6/2/62b19a12-6914-430e-81ce-dcfca47884df.jpg?1782722996","Clone":"https://cards.scryfall.io/normal/front/f/0/f00d33dd-4eb2-4446-9813-1923d8e2d2f3.jpg?1782722993","Control Magic":"https://cards.scryfall.io/normal/front/7/b/7b52f459-c703-4a0b-9114-ff69eec61287.jpg?1782722993","Copy Artifact":"https://cards.scryfall.io/normal/front/f/d/fd5ed955-1193-4e6a-a3e2-f54c1f9bf063.jpg?1782722993","Counterspell":"https://cards.scryfall.io/normal/front/0/d/0df55e3f-14de-46ef-b6b1-616618724d9e.jpg?1782722993","Creature Bond":"https://cards.scryfall.io/normal/front/e/e/ee4bd7d1-77e5-46e5-a594-c24469e88c4c.jpg?1782722992","Drain Power":"https://cards.scryfall.io/normal/front/e/a/ea3830c5-cc66-453e-9e53-0636e00ee0ee.jpg?1782722992","Feedback":"https://cards.scryfall.io/normal/front/0/e/0eb8f591-d763-49bf-8ef9-86265aaa72f7.jpg?1782722992","Flight":"https://cards.scryfall.io/normal/front/6/7/67c7784b-6b79-4268-a714-895c82809aff.jpg?1782722991","Invisibility":"https://cards.scryfall.io/normal/front/1/8/1858ac51-e6a7-48d7-8759-166070ca13d8.jpg?1782722991","Jump":"https://cards.scryfall.io/normal/front/c/b/cb3f4b11-ad1b-48e2-a500-787d351b0174.jpg?1782722990","Lifetap":"https://cards.scryfall.io/normal/front/1/1/11add837-7ee4-4104-b031-c161bce459ae.jpg?1782722990","Lord of Atlantis":"https://cards.scryfall.io/normal/front/2/1/210c4a90-fc7a-4c76-aeaa-20a005e45386.jpg?1782722989","Magical Hack":"https://cards.scryfall.io/normal/front/2/b/2bd4202c-0477-45aa-82fd-83c85d6d4bef.jpg?1782722988","Mahamoti Djinn":"https://cards.scryfall.io/normal/front/3/6/36204ddd-ddf7-4b44-ae3c-b4a5a41ac9cb.jpg?1782722988","Mana Short":"https://cards.scryfall.io/normal/front/7/3/73e3e0b3-5284-464f-8c62-0f7801c966f5.jpg?1782722987","Merfolk of the Pearl Trident":"https://cards.scryfall.io/normal/front/2/b/2b871039-6a66-4ac3-95e7-24759c1f2f92.jpg?1782722987","Phantasmal Forces":"https://cards.scryfall.io/normal/front/0/6/0631c7c8-9aa5-4333-8e20-20247fc47033.jpg?1782722987","Phantasmal Terrain":"https://cards.scryfall.io/normal/front/1/c/1c371aa1-1619-41e3-8364-7bc9b8cf5d14.jpg?1782722987","Phantom Monster":"https://cards.scryfall.io/normal/front/e/4/e46d2cf5-e8d0-4fb2-b950-252d52084b63.jpg?1782722986","Pirate Ship":"https://cards.scryfall.io/normal/front/d/0/d0a7cb23-d229-43c5-addd-dcf423984b0c.jpg?1782722986","Power Leak":"https://cards.scryfall.io/normal/front/c/c/ccc982b6-35b2-4e33-ace2-86cb79123e4f.jpg?1782722985","Power Sink":"https://cards.scryfall.io/normal/front/1/b/1b342dd3-09b9-4108-bf12-a65d4cef4eb9.jpg?1782722985","Prodigal Sorcerer":"https://cards.scryfall.io/normal/front/e/4/e4dc1103-7bf1-47f6-9006-d3ed9ccd7a6a.jpg?1782722984","Psionic Blast":"https://cards.scryfall.io/normal/front/a/6/a6a86e6e-bfff-46af-9d36-c912901fea92.jpg?1782722983","Psychic Venom":"https://cards.scryfall.io/normal/front/f/3/f3f5b68a-6b0e-431e-89f0-ff60f17687a5.jpg?1782722983","Sea Serpent":"https://cards.scryfall.io/normal/front/d/0/d0b333b7-db4d-4439-b0de-60414cbf8d7b.jpg?1782722982","Siren's Call":"https://cards.scryfall.io/normal/front/d/9/d992b336-3b6e-43e1-8662-d85664349b44.jpg?1782722982","Sleight of Mind":"https://cards.scryfall.io/normal/front/d/4/d427790c-e322-446e-8d7d-a6b48ad41a42.jpg?1782722982","Spell Blast":"https://cards.scryfall.io/normal/front/8/4/845734da-ab03-4dbc-bb5f-96481d3b8e88.jpg?1782722981","Stasis":"https://cards.scryfall.io/normal/front/b/6/b6cef408-5b4b-49f6-9531-be544815b93f.jpg?1782722981","Steal Artifact":"https://cards.scryfall.io/normal/front/8/3/83316930-d6ad-46ce-9b40-48eea856d95b.jpg?1782722980","Thoughtlace":"https://cards.scryfall.io/normal/front/2/3/23749375-1416-47a4-9251-52f41fe2fae9.jpg?1782722980","Time Walk":"https://cards.scryfall.io/normal/front/e/0/e0139f60-d48e-46fb-9f5a-1e3d7558c834.jpg?1782722979","Timetwister":"https://cards.scryfall.io/normal/front/9/a/9a49dc44-616e-4bdd-8220-0bb71eccc512.jpg?1782722979","Twiddle":"https://cards.scryfall.io/normal/front/5/7/576e811f-26a3-4a7c-bd13-3b1cc3e184eb.jpg?1782722978","Unsummon":"https://cards.scryfall.io/normal/front/8/5/8512f2c1-6361-4b79-843f-80b6bceeeb99.jpg?1782722978","Vesuvan Doppelganger":"https://cards.scryfall.io/normal/front/7/6/768f3a05-bd06-4a23-b9f2-94f6e618fd9f.jpg?1782722977","Volcanic Eruption":"https://cards.scryfall.io/normal/front/a/8/a80582b1-09db-45f8-b362-0e5207a5a8e6.jpg?1782722977","Wall of Air":"https://cards.scryfall.io/normal/front/d/a/da56fdf3-6a8f-4833-a5c3-197650cc4889.jpg?1782722977","Wall of Water":"https://cards.scryfall.io/normal/front/4/1/41faed1a-ded8-49ee-8e2a-c60d377775d7.jpg?1782722976","Water Elemental":"https://cards.scryfall.io/normal/front/8/d/8de940d6-98c0-46a9-b5fd-e2b0899ea19e.jpg?1782722976","Animate Dead":"https://cards.scryfall.io/normal/front/8/f/8fd7861d-925f-4b4c-a4ab-60be6f43d50b.jpg?1782722975","Bad Moon":"https://cards.scryfall.io/normal/front/4/3/43572906-ea74-4411-a549-5dc401591d2a.jpg?1782722975","Black Knight":"https://cards.scryfall.io/normal/front/c/1/c1662949-0d69-49a3-8c69-daf10717ed4e.jpg?1782722974","Bog Wraith":"https://cards.scryfall.io/normal/front/6/7/6701874e-986e-4b81-9268-90b6171e6187.jpg?1782722974","Contract from Below":"https://cards.scryfall.io/normal/front/9/8/9853b0ce-4763-4877-9741-f9145a3659c6.jpg?1782722973","Cursed Land":"https://cards.scryfall.io/normal/front/c/f/cf5f3c61-1e54-4eea-bf82-311cfa988e6a.jpg?1782722973","Dark Ritual":"https://cards.scryfall.io/normal/front/e/b/ebb6664d-23ca-456e-9916-afcd6f26aa7f.jpg?1782722972","Darkpact":"https://cards.scryfall.io/normal/front/e/7/e78db688-93a2-47f5-9aa5-9158a72cd973.jpg?1782722972","Deathgrip":"https://cards.scryfall.io/normal/front/2/3/2371c126-f19a-472a-ba5f-3b1366274ea0.jpg?1782722972","Deathlace":"https://cards.scryfall.io/normal/front/6/f/6ff1cefc-62cb-4525-b0c5-2b09603b4314.jpg?1782722971","Demonic Attorney":"https://cards.scryfall.io/normal/front/f/d/fd891fc6-d9d6-494e-ae65-8bea8f44b575.jpg?1782722970","Demonic Hordes":"https://cards.scryfall.io/normal/front/6/c/6c9bb8b1-fb79-4b99-ba09-c6e6c860de50.jpg?1782722970","Demonic Tutor":"https://cards.scryfall.io/normal/front/7/1/711d4d54-5520-4de8-9b93-79902ed8e562.jpg?1782722970","Drain Life":"https://cards.scryfall.io/normal/front/5/d/5d077a49-73d4-4958-b42a-31b814e110e8.jpg?1782722969","Drudge Skeletons":"https://cards.scryfall.io/normal/front/2/3/23614289-0d73-4747-a849-5cb67cc97d6a.jpg?1782722969","Evil Presence":"https://cards.scryfall.io/normal/front/0/5/0551d66e-8cd4-48f0-aa17-15f26be9d85f.jpg?1782722969","Fear":"https://cards.scryfall.io/normal/front/0/c/0cd927be-e63f-4371-a1d8-7a0489cb187e.jpg?1782722968","Frozen Shade":"https://cards.scryfall.io/normal/front/d/0/d0bd76c8-4cff-4c15-9686-7a299b589814.jpg?1782722967","Gloom":"https://cards.scryfall.io/normal/front/a/8/a8d10bc7-daeb-4c0d-9e4a-8eae8d11699f.jpg?1782722967","Howl from Beyond":"https://cards.scryfall.io/normal/front/6/7/67ec17e1-174b-4d07-a27f-91a333c4b2fb.jpg?1782722967","Hypnotic Specter":"https://cards.scryfall.io/normal/front/b/4/b43b900f-2d9b-442b-9699-058483604ec9.jpg?1782722966","Lich":"https://cards.scryfall.io/normal/front/4/2/4250caec-0e37-41be-9ec4-8938deb5f0d0.jpg?1782722965","Lord of the Pit":"https://cards.scryfall.io/normal/front/2/9/2926777a-4f6e-4965-ba83-22cf7df02602.jpg?1782722965","Mind Twist":"https://cards.scryfall.io/normal/front/e/e/eee9e106-a248-49d2-b8c8-6bbcd56ce739.jpg?1782722965","Nether Shadow":"https://cards.scryfall.io/normal/front/f/1/f13ad58a-6f9b-420a-bac1-40929f5e616a.jpg?1782722964","Nettling Imp":"https://cards.scryfall.io/normal/front/8/1/8105973c-a94d-444c-ba20-ab0fa978bee8.jpg?1782722963","Nightmare":"https://cards.scryfall.io/normal/front/b/8/b8cdd6a7-f772-4ccb-914f-63f52ed54d6b.jpg?1782722963","Paralyze":"https://cards.scryfall.io/normal/front/b/e/be33a155-de26-43d1-88f1-c926f1b7cb7c.jpg?1782722963","Pestilence":"https://cards.scryfall.io/normal/front/d/4/d42a6350-b16b-4e10-a273-e6cbb55dcb7a.jpg?1782722961","Plague Rats":"https://cards.scryfall.io/normal/front/b/3/b3724e40-0622-4aee-9334-6c9fff88bcd5.jpg?1782722962","Raise Dead":"https://cards.scryfall.io/normal/front/c/e/ce07bede-2219-427c-a61a-56518751de42.jpg?1782722961","Royal Assassin":"https://cards.scryfall.io/normal/front/5/9/59590768-fa96-4869-8763-9d5ab6ac22ad.jpg?1782722961","Sacrifice":"https://cards.scryfall.io/normal/front/1/2/12164aee-6a27-4246-8d15-2d6dd20d92e9.jpg?1782722960","Scathe Zombies":"https://cards.scryfall.io/normal/front/e/9/e9be6dcf-5e25-4b8c-9cd0-badf3771f81e.jpg?1782722960","Scavenging Ghoul":"https://cards.scryfall.io/normal/front/4/2/426984e0-88e1-4a2d-9a1c-798b95864df3.jpg?1782722959","Sengir Vampire":"https://cards.scryfall.io/normal/front/5/1/510840f4-7c0e-4b47-8ebf-23c20cac4bd9.jpg?1782722959","Simulacrum":"https://cards.scryfall.io/normal/front/3/5/35c3a78d-cc79-4187-929a-8aa1d1469990.jpg?1782722958","Sinkhole":"https://cards.scryfall.io/normal/front/0/4/04b31611-9053-4eaf-b392-21bb644fef5f.jpg?1782722958","Terror":"https://cards.scryfall.io/normal/front/2/1/21004958-2c7e-4a55-bc80-411c4d780106.jpg?1782722957","Unholy Strength":"https://cards.scryfall.io/normal/front/9/0/90563f90-0127-4164-b43b-f0321dc63a1d.jpg?1782722957","Wall of Bone":"https://cards.scryfall.io/normal/front/a/e/ae20d442-a544-4a03-9ebf-5ecb137c67dd.jpg?1782722956","Warp Artifact":"https://cards.scryfall.io/normal/front/9/e/9e5e07a2-fbdf-4c4c-996a-fce40bab5de5.jpg?1782722956","Weakness":"https://cards.scryfall.io/normal/front/3/6/36ca06a1-9b9a-49a2-9c47-9b72228621bc.jpg?1782722956","Will-o'-the-Wisp":"https://cards.scryfall.io/normal/front/a/1/a1a6f8e9-7bc1-4151-b55f-acf877b1a7a6.jpg?1782722955","Word of Command":"https://cards.scryfall.io/normal/front/9/6/96c21429-98d3-416b-be00-6aa9c4c5a006.jpg?1782722955","Zombie Master":"https://cards.scryfall.io/normal/front/3/d/3d4255a0-d445-4c00-b936-bbf07851e1c8.jpg?1782722954","Burrowing":"https://cards.scryfall.io/normal/front/a/1/a14c05e4-8df3-450b-8a98-5028e73b14c1.jpg?1782722954","Chaoslace":"https://cards.scryfall.io/normal/front/7/2/72ea2048-57bc-43d5-8987-33ca727f1a97.jpg?1782722954","Disintegrate":"https://cards.scryfall.io/normal/front/8/7/8712c49e-f171-4669-bed9-87575a37af11.jpg?1782722953","Dragon Whelp":"https://cards.scryfall.io/normal/front/6/b/6bbf1eab-bc32-4835-b566-8634b1fe81b0.jpg?1782722952","Dwarven Demolition Team":"https://cards.scryfall.io/normal/front/0/3/03482c9c-1f25-4d73-9243-17462ea37ac4.jpg?1782722952","Dwarven Warriors":"https://cards.scryfall.io/normal/front/2/d/2d4d87a3-5f8b-4152-9a8b-538ab49d62e8.jpg?1782722952","Earth Elemental":"https://cards.scryfall.io/normal/front/b/2/b24b5864-44c0-4bc8-8705-9504f83b2c03.jpg?1782722951","Earthbind":"https://cards.scryfall.io/normal/front/a/6/a6d492b7-b0b3-420e-8d00-6dacb11de77e.jpg?1782722951","Earthquake":"https://cards.scryfall.io/normal/front/e/6/e68ac362-6cdc-48a6-bdd3-4f8ea32add64.jpg?1782722950","False Orders":"https://cards.scryfall.io/normal/front/7/e/7eb71ac4-796d-4011-9002-1129bc09c284.jpg?1782722950","Fire Elemental":"https://cards.scryfall.io/normal/front/d/a/da237992-2919-4e37-8f56-2164095f59b5.jpg?1782722950","Fireball":"https://cards.scryfall.io/normal/front/b/7/b7623c00-144b-4a8f-9c6c-f5e9e4f65ece.jpg?1782722948","Firebreathing":"https://cards.scryfall.io/normal/front/3/e/3eb27381-505d-4e47-bf66-9e7ba91a5075.jpg?1782722948","Flashfires":"https://cards.scryfall.io/normal/front/e/e/ee8a05a4-0ce3-4abe-bb60-08af53cf08e5.jpg?1782722947","Fork":"https://cards.scryfall.io/normal/front/e/6/e6b43916-fe2d-417a-a550-d7c795023297.jpg?1782722947","Goblin Balloon Brigade":"https://cards.scryfall.io/normal/front/5/1/5129b422-7a35-4bc5-b14b-c814012a0d8f.jpg?1782722947","Goblin King":"https://cards.scryfall.io/normal/front/5/8/5873672d-37ea-4c0f-97f3-12b74fde112d.jpg?1782722946","Granite Gargoyle":"https://cards.scryfall.io/normal/front/f/1/f15bf2b2-6848-4fbd-b89a-8d8da8ae1cdc.jpg?1782722946","Gray Ogre":"https://cards.scryfall.io/normal/front/7/3/73ae5276-b607-4f23-a9d2-e8cc7b8e3693.jpg?1782722946","Hill Giant":"https://cards.scryfall.io/normal/front/0/d/0ddb98e8-13fe-4786-83f7-b72c56db135a.jpg?1782722945","Hurloon Minotaur":"https://cards.scryfall.io/normal/front/7/8/78a9088f-8755-47cb-aa93-51d992ccab90.jpg?1782722945","Ironclaw Orcs":"https://cards.scryfall.io/normal/front/d/5/d56421a8-34ae-4033-943f-c59a7bf2b6f9.jpg?1782722944","Keldon Warlord":"https://cards.scryfall.io/normal/front/8/f/8fe3fd83-969c-4add-888f-86f4306b067c.jpg?1782722944","Lightning Bolt":"https://cards.scryfall.io/normal/front/d/5/d573ef03-4730-45aa-93dd-e45ac1dbaf4a.jpg?1782722943","Mana Flare":"https://cards.scryfall.io/normal/front/7/f/7fb99a26-beeb-4aca-bb02-b2d2ce0595f9.jpg?1782722943","Manabarbs":"https://cards.scryfall.io/normal/front/6/1/6121f72f-680f-4bb4-ae4d-37ee4ebed4d8.jpg?1782722942","Mons's Goblin Raiders":"https://cards.scryfall.io/normal/front/b/4/b4eb3db3-6a7c-488a-9433-d5d1d3133816.jpg?1782722942","Orcish Artillery":"https://cards.scryfall.io/normal/front/a/9/a97208b1-a91b-4129-8a00-2f97b418accc.jpg?1782722942","Orcish Oriflamme":"https://cards.scryfall.io/normal/front/9/1/911538ea-322c-4c40-a9c3-35e47fe60fce.jpg?1782722941","Power Surge":"https://cards.scryfall.io/normal/front/6/2/62858604-ca5a-4f69-a045-a7515ebfabf2.jpg?1782722941","Raging River":"https://cards.scryfall.io/normal/front/6/1/61e4f56d-1f4f-49f2-8534-0d09196a3327.jpg?1782722941","Red Elemental Blast":"https://cards.scryfall.io/normal/front/7/7/776ad9be-3309-4f1d-9f27-6219d9477662.jpg?1782722939","Roc of Kher Ridges":"https://cards.scryfall.io/normal/front/7/3/731a4b86-c213-4d8e-bf01-0a0e8cff0ff1.jpg?1782722940","Rock Hydra":"https://cards.scryfall.io/normal/front/4/1/410ac9e6-fbc1-4cc8-84db-84e2eb1bab97.jpg?1782722939","Sedge Troll":"https://cards.scryfall.io/normal/front/b/1/b13bf496-f3c0-4c13-8282-e7abfab6a198.jpg?1782722939","Shatter":"https://cards.scryfall.io/normal/front/5/0/50dc7fc1-cb6a-4c68-b993-1a25cf16226e.jpg?1782722938","Shivan Dragon":"https://cards.scryfall.io/normal/front/f/e/fefbf149-f988-4f8b-9f53-56f5878116a6.jpg?1782722937","Smoke":"https://cards.scryfall.io/normal/front/7/c/7c67788e-d713-47c3-ab9f-b8a6212ae24f.jpg?1782722937","Stone Giant":"https://cards.scryfall.io/normal/front/7/f/7ffaedb9-25f8-4304-9085-e12505b93312.jpg?1782722936","Stone Rain":"https://cards.scryfall.io/normal/front/5/7/57ff74cb-a2ed-4123-ac42-f72f9820049e.jpg?1782722936","Tunnel":"https://cards.scryfall.io/normal/front/b/2/b21ebc9f-a93e-4d18-b3e8-8459e3abbf31.jpg?1782722936","Two-Headed Giant of Foriys":"https://cards.scryfall.io/normal/front/3/1/31c687dc-ee0c-4e54-a2b3-5d8e633b3245.jpg?1782722936","Uthden Troll":"https://cards.scryfall.io/normal/front/2/f/2ff21a6f-83a7-4bf3-a078-294e303232cc.jpg?1782722936","Wall of Fire":"https://cards.scryfall.io/normal/front/e/f/efcf12cd-fb70-444e-9641-73ffa0e8f16e.jpg?1782722934","Wall of Stone":"https://cards.scryfall.io/normal/front/1/4/140e567c-6e4a-42b0-8084-d6c9695ae802.jpg?1782722934","Wheel of Fortune":"https://cards.scryfall.io/normal/front/6/7/67b369c4-faa8-45c8-a1b9-98f228b69682.jpg?1782722933","Aspect of Wolf":"https://cards.scryfall.io/normal/front/f/d/fd9ac9e6-1395-4fbd-80e2-645f0d910c29.jpg?1782722933","Berserk":"https://cards.scryfall.io/normal/front/e/1/e173c8ce-2352-405e-ad00-e3bb94ced1ad.jpg?1782722932","Birds of Paradise":"https://cards.scryfall.io/normal/front/5/5/55fe6449-1f23-43dc-adee-d144cd505b5c.jpg?1782722931","Camouflage":"https://cards.scryfall.io/normal/front/3/8/3838c2a3-7fab-4976-9c1b-2891aee24e52.jpg?1782722931","Channel":"https://cards.scryfall.io/normal/front/c/1/c1862c47-71cc-45a3-8805-a5ddc62e55ea.jpg?1782722931","Cockatrice":"https://cards.scryfall.io/normal/front/9/c/9cd91814-6177-4a3d-a1c1-a3be7d7c7957.jpg?1782722931","Craw Wurm":"https://cards.scryfall.io/normal/front/b/f/bfed1a95-bd67-4e16-a781-81866028af2f.jpg?1782722930","Elvish Archers":"https://cards.scryfall.io/normal/front/1/c/1cb9d405-f2b5-4e10-a405-feafd2a87d90.jpg?1782722930","Fastbond":"https://cards.scryfall.io/normal/front/a/5/a575a9af-e1de-4a1d-91d8-440585377e4f.jpg?1782722930","Fog":"https://cards.scryfall.io/normal/front/c/f/cfba606d-bb55-43ba-aa0c-299649958788.jpg?1782722928","Force of Nature":"https://cards.scryfall.io/normal/front/2/1/21551cb6-3a53-42dd-9bbd-4bc56304d6d3.jpg?1782722928","Fungusaur":"https://cards.scryfall.io/normal/front/5/a/5ad89f0d-b09b-40a0-84d6-3ee60dec7e23.jpg?1782722928","Gaea's Liege":"https://cards.scryfall.io/normal/front/e/2/e2b15221-c8b0-4861-9f8b-8a65834ad499.jpg?1782722927","Giant Growth":"https://cards.scryfall.io/normal/front/3/6/367dbefe-3366-408e-9fcf-7dc00f8cc201.jpg?1782722927","Giant Spider":"https://cards.scryfall.io/normal/front/7/7/77636b4c-faea-4bf5-b88c-dd5bb88dc930.jpg?1782722926","Grizzly Bears":"https://cards.scryfall.io/normal/front/c/e/ce2d603a-3231-4a8c-bf39-1617586ea870.jpg?1782722926","Hurricane":"https://cards.scryfall.io/normal/front/5/2/52f5a19f-16e4-4d35-89e1-969ac8202f88.jpg?1782722925","Ice Storm":"https://cards.scryfall.io/normal/front/9/9/9914836e-2fa6-4390-94b2-431427848a54.jpg?1782722925","Instill Energy":"https://cards.scryfall.io/normal/front/5/b/5bd38716-874c-4e3c-a315-837839a6258c.jpg?1782722925","Ironroot Treefolk":"https://cards.scryfall.io/normal/front/b/9/b93c5869-7777-44bb-967a-e9439b25ced4.jpg?1782722924","Kudzu":"https://cards.scryfall.io/normal/front/b/2/b2b72dcd-9ea1-4729-baae-ecd262fdff67.jpg?1782722924","Ley Druid":"https://cards.scryfall.io/normal/front/f/9/f9232508-d363-4ef3-987a-741f6bff331f.jpg?1782722923","Lifeforce":"https://cards.scryfall.io/normal/front/e/2/e292577e-6232-44fa-a9c2-cc09949c6ed3.jpg?1782722923","Lifelace":"https://cards.scryfall.io/normal/front/3/8/38cb601b-a35c-412e-b386-e77dad3daa54.jpg?1782722922","Living Artifact":"https://cards.scryfall.io/normal/front/c/9/c9e753a2-a7d0-4d37-ae65-b5a1b5039a6e.jpg?1782722922","Living Lands":"https://cards.scryfall.io/normal/front/8/0/80be0580-7948-4d8e-8c0f-5e2797ac411b.jpg?1782722921","Llanowar Elves":"https://cards.scryfall.io/normal/front/d/4/d4f1cc9e-4f99-4c26-ac1b-8ef069fa8ceb.jpg?1782722920","Lure":"https://cards.scryfall.io/normal/front/2/a/2a87b26e-0431-42e9-b44f-94ba8546111a.jpg?1782722920","Natural Selection":"https://cards.scryfall.io/normal/front/a/8/a8917dc8-01c0-4e72-9310-c4d501775411.jpg?1782722920","Regeneration":"https://cards.scryfall.io/normal/front/b/7/b7b7aa34-b4f8-41b4-82ce-ab2e204c3bf4.jpg?1782722919","Regrowth":"https://cards.scryfall.io/normal/front/b/a/badc73ec-3728-4246-90c7-5f4eb7051ed5.jpg?1782722919","Scryb Sprites":"https://cards.scryfall.io/normal/front/6/d/6d929c38-91e6-457c-937a-d1884f4bba44.jpg?1782722918","Shanodin Dryads":"https://cards.scryfall.io/normal/front/8/1/814cf35c-f1ad-4bf4-8c10-a5592c3b1be8.jpg?1782722918","Stream of Life":"https://cards.scryfall.io/normal/front/a/a/aa1c4d4b-2645-4cd9-823e-3c9bb2eb48f9.jpg?1782722917","Thicket Basilisk":"https://cards.scryfall.io/normal/front/e/9/e92cce01-b3bd-4307-aae5-9a7c8fa386ab.jpg?1782722917","Timber Wolves":"https://cards.scryfall.io/normal/front/b/c/bc2570a4-eef9-430d-b6c2-cd51d29b9d01.jpg?1782722917","Tranquility":"https://cards.scryfall.io/normal/front/7/7/774cc5a6-3a69-4812-add4-eb5eb6389238.jpg?1782722916","Tsunami":"https://cards.scryfall.io/normal/front/9/e/9ed67d61-cf47-446b-b454-eb404a8686b7.jpg?1782722915","Verduran Enchantress":"https://cards.scryfall.io/normal/front/9/f/9f87178b-1221-4d7a-a7a5-20d7f01b8089.jpg?1782722915","Wall of Brambles":"https://cards.scryfall.io/normal/front/a/f/af2a4558-db6e-41b2-aff6-b164d93282a0.jpg?1782722914","Wall of Ice":"https://cards.scryfall.io/normal/front/c/c/cc743a03-867c-4bb0-8fb0-2bcaa0a8a756.jpg?1782722914","Wall of Wood":"https://cards.scryfall.io/normal/front/8/d/8df80424-3bd9-4982-ad79-e55d9ba3b43d.jpg?1782722914","Wanderlust":"https://cards.scryfall.io/normal/front/2/2/220a03ca-8c9b-4acb-821d-f6577fbb20fb.jpg?1782722913","War Mammoth":"https://cards.scryfall.io/normal/front/c/8/c8d6081e-f686-4263-a0a2-21c0d9af5fdb.jpg?1782722913","Web":"https://cards.scryfall.io/normal/front/3/7/37c7890a-86dc-4a97-a7ce-1436fa22d0c0.jpg?1782722912","Wild Growth":"https://cards.scryfall.io/normal/front/f/d/fd896dfa-66c0-4327-8e5b-489bbe350c95.jpg?1782722912","Ankh of Mishra":"https://cards.scryfall.io/normal/front/f/5/f594b7aa-d44e-47c4-989b-565f881e25f1.jpg?1782722911","Basalt Monolith":"https://cards.scryfall.io/normal/front/6/6/66a74c89-6f86-4ec8-af17-391cd5026054.jpg?1782722911","Black Lotus":"https://cards.scryfall.io/normal/front/b/0/b0faa7f2-b547-42c4-a810-839da50dadfe.jpg?1782722911","Black Vise":"https://cards.scryfall.io/normal/front/7/6/76ac72f8-5b1e-4d67-a796-ef69cde27424.jpg?1782722909","Celestial Prism":"https://cards.scryfall.io/normal/front/a/4/a47417cb-1ea7-4f65-ba06-e27a99373114.jpg?1782722909","Chaos Orb":"https://cards.scryfall.io/normal/front/9/2/92274971-7c4a-4326-b0fe-75e2d124f718.jpg?1782722908","Clockwork Beast":"https://cards.scryfall.io/normal/front/2/7/27f916a2-0ace-44b5-99dc-72979af34db9.jpg?1782722908","Conservator":"https://cards.scryfall.io/normal/front/c/7/c7824e2a-4eff-4f72-9216-0db30a4f4252.jpg?1782722908","Copper Tablet":"https://cards.scryfall.io/normal/front/3/0/30935e4a-013e-4c46-ad05-304df8e5dfa4.jpg?1782722907","Crystal Rod":"https://cards.scryfall.io/normal/front/7/6/76693233-7961-4b7e-80f2-ed90e494c4aa.jpg?1782722907","Cyclopean Tomb":"https://cards.scryfall.io/normal/front/8/9/894c5cf2-8ae2-427a-bcbc-67df0bdfee9d.jpg?1782722907","Dingus Egg":"https://cards.scryfall.io/normal/front/6/5/65eb6cda-e512-40a8-9c1f-335b713409ff.jpg?1782722907","Disrupting Scepter":"https://cards.scryfall.io/normal/front/c/a/ca571ee8-07a2-43b8-9acf-89cbfd3cf7c9.jpg?1782722905","Forcefield":"https://cards.scryfall.io/normal/front/3/f/3f2004c1-8efe-407f-bf48-27b807422eea.jpg?1782722905","Gauntlet of Might":"https://cards.scryfall.io/normal/front/d/a/da248001-ed75-4b68-9532-37d3cd5afc4c.jpg?1782722904","Glasses of Urza":"https://cards.scryfall.io/normal/front/c/a/cafc2350-5d64-4379-9198-79a114654d45.jpg?1782722904","Helm of Chatzuk":"https://cards.scryfall.io/normal/front/3/7/3792c6ef-c4e6-4923-9a51-7d28fbc5c393.jpg?1782722903","Howling Mine":"https://cards.scryfall.io/normal/front/5/1/51f8f6e1-a451-4262-90d3-5107caf54175.jpg?1782722903","Icy Manipulator":"https://cards.scryfall.io/normal/front/2/9/29dc1596-a2e7-4d60-9f99-89babaef8a06.jpg?1782722903","Illusionary Mask":"https://cards.scryfall.io/normal/front/6/2/62ef2f37-b8ad-47ad-89ca-d6abcb7ff21b.jpg?1782722903","Iron Star":"https://cards.scryfall.io/normal/front/5/7/5786de12-cade-43c2-a6b0-0c5b294b9d0e.jpg?1782722902","Ivory Cup":"https://cards.scryfall.io/normal/front/9/9/9964d8d8-dc97-4e5f-9f52-173f7e2c37fd.jpg?1782722901","Jade Monolith":"https://cards.scryfall.io/normal/front/4/a/4a77e0f1-449d-4a7d-9fa0-ba7598f7a73a.jpg?1782722901","Jade Statue":"https://cards.scryfall.io/normal/front/8/d/8d82d94b-ceef-4533-a4f2-b6442a61b839.jpg?1782722901","Jayemdae Tome":"https://cards.scryfall.io/normal/front/c/a/cac8c421-5b92-481d-b2de-560c0231ab58.jpg?1782722899","Juggernaut":"https://cards.scryfall.io/normal/front/d/c/dcd6a291-5282-4f49-8203-d9b416083c48.jpg?1782722899","Kormus Bell":"https://cards.scryfall.io/normal/front/3/f/3f4ef7a1-148d-44ac-89ed-0ef379cca0c6.jpg?1782722898","Library of Leng":"https://cards.scryfall.io/normal/front/2/3/2340edcb-8cd5-4ccd-99e2-b9a29f72c495.jpg?1782722898","Living Wall":"https://cards.scryfall.io/normal/front/4/a/4a98ada6-923a-44a5-bdef-ea6a160b481e.jpg?1782722898","Mana Vault":"https://cards.scryfall.io/normal/front/1/9/19499cb7-eccb-4e69-af32-6002d447a160.jpg?1782722898","Meekstone":"https://cards.scryfall.io/normal/front/1/3/13a68a17-22ee-47c9-870a-83e911862b94.jpg?1782722897","Mox Emerald":"https://cards.scryfall.io/normal/front/b/0/b0e1427c-05cd-465b-be59-97ed6e39f7ba.jpg?1782722897","Mox Jet":"https://cards.scryfall.io/normal/front/9/2/92bcd1ce-19b1-4d78-8b09-95242ca08d76.jpg?1782722896","Mox Pearl":"https://cards.scryfall.io/normal/front/8/e/8ebe4be7-e12a-4596-a899-fbd5b152e879.jpg?1782722896","Mox Ruby":"https://cards.scryfall.io/normal/front/8/9/8945585f-4773-493d-a0fe-d707db910b38.jpg?1782722895","Mox Sapphire":"https://cards.scryfall.io/normal/front/8/2/82da0972-b17b-4600-9efd-e9430a0db04b.jpg?1782722894","Nevinyrral's Disk":"https://cards.scryfall.io/normal/front/1/2/12926dc8-8e6f-4a47-a12b-4d674189615a.jpg?1782722894","Obsianus Golem":"https://cards.scryfall.io/normal/front/4/c/4c8e9f5c-deba-4443-bf9d-fb2be75c5418.jpg?1782722894","Rod of Ruin":"https://cards.scryfall.io/normal/front/a/f/af957200-c538-4f52-b105-6db7a7abb4dc.jpg?1782722893","Sol Ring":"https://cards.scryfall.io/normal/front/c/4/c4300d24-1cae-4dd5-be7e-38cc677cf5bd.jpg?1782722893","Soul Net":"https://cards.scryfall.io/normal/front/2/b/2b814198-814b-4619-a158-327af675f8f2.jpg?1782722892","Sunglasses of Urza":"https://cards.scryfall.io/normal/front/c/0/c0d433a4-76c0-4f27-836d-4c0c13a511fb.jpg?1782722892","The Hive":"https://cards.scryfall.io/normal/front/5/4/544a7138-eae8-4ff9-9e17-680bfa717183.jpg?1782722891","Throne of Bone":"https://cards.scryfall.io/normal/front/a/2/a2931ae0-7836-4000-b9ec-f2029ebf5d96.jpg?1782722891","Time Vault":"https://cards.scryfall.io/normal/front/9/0/902441dc-c976-4c92-b897-6376eaa0fe38.jpg?1782722890","Winter Orb":"https://cards.scryfall.io/normal/front/9/3/9359f60c-9a27-4e53-b35b-964a121a6fba.jpg?1782722890","Wooden Sphere":"https://cards.scryfall.io/normal/front/b/c/bcae01a2-171b-47cd-87be-f1e4e5314326.jpg?1782722889","Badlands":"https://cards.scryfall.io/normal/front/7/1/717f6d10-9144-4ade-9ac6-a481cc66b875.jpg?1782722889","Bayou":"https://cards.scryfall.io/normal/front/4/1/412ceddd-2b9a-4551-a6bf-ae2830a2010a.jpg?1782722888","Plateau":"https://cards.scryfall.io/normal/front/6/e/6eafa00b-c628-40f6-86eb-88e1361fc7a0.jpg?1782722888","Savannah":"https://cards.scryfall.io/normal/front/9/4/94f7e24c-2546-41b6-81ad-5e920b07e64e.jpg?1782722887","Scrubland":"https://cards.scryfall.io/normal/front/b/e/bebe39d4-21fb-46a4-a1ec-b97102e46c15.jpg?1782722887","Taiga":"https://cards.scryfall.io/normal/front/6/0/60df6592-0b3b-4b87-aeb2-8fa94b4fb7be.jpg?1782722887","Tropical Island":"https://cards.scryfall.io/normal/front/a/9/a9c6c759-aabf-44e7-ba8c-33c5df232b56.jpg?1782722886","Tundra":"https://cards.scryfall.io/normal/front/a/0/a03e8c5b-f4ed-4fd7-ba05-db813ccc05eb.jpg?1782722886","Underground Sea":"https://cards.scryfall.io/normal/front/f/f/ff76ac86-8a8a-47fe-9388-8950ca3e26c3.jpg?1782722885","Plains":"https://cards.scryfall.io/normal/front/b/1/b1623d57-4729-4796-b3f7-f1837a05c6ed.jpg?1782722885","Island":"https://cards.scryfall.io/normal/front/9/0/90a57c0e-fa61-45ef-955d-d296403967d5.jpg?1782722883","Swamp":"https://cards.scryfall.io/normal/front/6/1/6176936d-72e2-4205-8871-4c5a4f1cb2d8.jpg?1782722883","Mountain":"https://cards.scryfall.io/normal/front/e/a/eace2c85-976c-425e-9800-5a6ccbd91b56.jpg?1782722881","Forest":"https://cards.scryfall.io/normal/front/6/f/6f1c8cb0-38eb-408b-94e8-16db83999b3b.jpg?1782722880"};
+
+const NAMES = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare' };
+
+function buildDebugPanel(result, kind) {
+  const N = result.startPack;
+  const rows = result.starts.map((s) =>
+    '<b>' + s.sheet + '</b> — start @ card ' + s.skip + ' (= ' + s.group + ' × ' + kind.toLowerCase() + ' ' + N +
+    ') · period ' + s.period + ' cards (' + (s.period / 121) + ' sheets)'
+  ).join('<br>');
+  document.getElementById('dbgpanel').innerHTML =
+    '<div class="dbgcard"><b>' + kind + ' #</b> ' + N + ' of ' + result.period + ' distinct · <b>stripe cycle</b> 2,3,4,5 · position 1 = (col 11, row 11)<br>' +
+    rows + '<br><span style="opacity:.8">card overlay = #streamPos · col,row on sheet · stripe# (width)</span></div>';
+}
+
+function renderUnit(result, kind) {
+  const pack = result.packs[0], N = result.startPack;
+  const root = document.getElementById('pack');
+  root.innerHTML = '';
+  const ranges = result.starts.map((s) => s.sheet + ' ' + s.skip + '–' + (s.skip + s.group - 1)).join(', ');
+  document.getElementById('meta').textContent =
+    kind + ' #' + N + ' of ' + result.period + ' · positions: ' + ranges + ' · basic lands are sheet filler';
+  buildDebugPanel(result, kind);
+  for (const slot of ['common', 'uncommon', 'rare']) {
+    const cards = pack.filter((c) => c.fromSheet === slot);
+    const title = NAMES[slot] + (cards.length === 1 ? '' : 's');
+    const h = document.createElement('div'); h.className = 'group-label'; h.textContent = title + ' · ' + cards.length;
+    root.appendChild(h);
+    const g = document.createElement('div'); g.className = 'grid'; root.appendChild(g);
+    for (const c of cards) {
+      const card = document.createElement('div'); card.className = 'card ' + slot;
+      const fb = document.createElement('div'); fb.className = 'fallback'; fb.textContent = label(c); card.appendChild(fb);
+      const url = IMG_MAP[c.name];
+      if (url) {
+        const img = document.createElement('img'); img.alt = label(c); img.loading = 'lazy';
+        img.onerror = () => { img.remove(); }; // fall back to the name plate underneath
+        img.src = url;
+        card.appendChild(img);
+      }
+      const dbg = document.createElement('div'); dbg.className = 'dbg';
+      dbg.innerHTML = 'pos ' + (c.pos + 1) + ' · col ' + c.col + ', row ' + c.row + '<br>stripe ' + c.stripeIndex + ' · width ' + c.width;
+      card.appendChild(dbg);
+      const nm = document.createElement('div'); nm.className = 'name';
+      nm.innerHTML = label(c) + (c.isBasicLand ? ' <span class="land-pill">land</span>' : '');
+      card.appendChild(nm);
+      g.appendChild(card);
+    }
+  }
+}
+
+const PERIOD = stripedPeriod(CYCLE, 11, 11); // 1694-card walk period
+function gcd(a, b) { while (b) { const t = b; b = a % b; a = t; } return a; }
+function lcm(a, b) { return a / gcd(a, b) * b; }
+function unitCount(layout) { let l = 1; for (const [, n] of layout) l = lcm(l, PERIOD / gcd(PERIOD, n)); return l; }
+
+const MODES = {
+  pack:       { layout: LAYOUTS.booster, box: 1,  unit: 'Booster pack', boxLabel: '' },
+  box:        { layout: LAYOUTS.booster, box: 36, unit: 'Booster pack', boxLabel: 'Booster box' },
+  starter:    { layout: LAYOUTS.starter, box: 1,  unit: 'Starter deck', boxLabel: '' },
+  starterbox: { layout: LAYOUTS.starter, box: 10, unit: 'Starter deck', boxLabel: 'Starter box' },
+};
+function rangeFor(m) {
+  const cfg = MODES[m];
+  const units = unitCount(cfg.layout);
+  return cfg.box === 1 ? units : units / gcd(units, cfg.box);
+}
+
+let mode = 'pack', current = 0;
+
+function renderBox(cfg, boxNum) {
+  const units = unitCount(cfg.layout);
+  const start = (cfg.box * boxNum) % units;
+  const { packs } = assemble(cfg.box, start, cfg.layout);
+  const boxes = units / gcd(units, cfg.box);
+  const cardsPer = cfg.layout.reduce((a, kv) => a + kv[1], 0);
+  const root = document.getElementById('pack'); root.innerHTML = '';
+  document.getElementById('meta').textContent =
+    cfg.boxLabel + ' #' + boxNum + ' of ' + boxes + ' · ' + cfg.box + ' ' + cfg.unit.toLowerCase() + 's (#' + start + '–#' + ((start + cfg.box - 1) % units) + ') · ' + (cfg.box * cardsPer) + ' cards';
+  document.getElementById('dbgpanel').innerHTML =
+    '<div class="dbgcard"><b>' + cfg.boxLabel + ' #</b> ' + boxNum + ' = ' + cfg.unit.toLowerCase() + ' indices ' + start + '…' + (start + cfg.box - 1) +
+    ' (' + cfg.box + ' consecutive units; box b = units ' + cfg.box + 'b…' + cfg.box + 'b+' + (cfg.box - 1) + ')</div>';
+  packs.forEach((pack, i) => {
+    const uIndex = (start + i) % units;
+    const block = document.createElement('div'); block.className = 'boxpack';
+    const head = document.createElement('div'); head.className = 'boxhead';
+    const rares = pack.filter((c) => c.fromSheet === 'rare').map(label).join(', ');
+    head.innerHTML = '<span class="pn">' + cfg.unit + ' #' + uIndex + '</span> <span class="rarename">' + rares + '</span>';
+    block.appendChild(head);
+    const row = document.createElement('div'); row.className = 'boxrow';
+    for (const c of pack) {
+      const mini = document.createElement('div'); mini.className = 'mini ' + c.fromSheet; mini.title = label(c);
+      const url = IMG_MAP[c.name];
+      if (url) { const img = document.createElement('img'); img.loading = 'lazy'; img.alt = label(c); img.onerror = () => img.remove(); img.src = url.replace('/normal/', '/small/'); mini.appendChild(img); }
+      row.appendChild(mini);
+    }
+    block.appendChild(row);
+    root.appendChild(block);
+  });
+}
+
+function render() {
+  const cfg = MODES[mode];
+  if (cfg.box === 1) renderUnit(assemble(1, current, cfg.layout), cfg.unit);
+  else renderBox(cfg, current);
+}
+function show(n) {
+  const span = rangeFor(mode);
+  current = ((n % span) + span) % span;
+  document.getElementById('packno').value = current;
+  render();
+}
+const LABELS = { pack: 'pack', box: 'box', starter: 'deck', starterbox: 'box' };
+function setMode(m) {
+  mode = m;
+  for (const id of ['m_pack', 'm_box', 'm_starter', 'm_starterbox']) document.getElementById(id).classList.toggle('on', id === 'm_' + m);
+  document.getElementById('pnlabel').innerHTML = LABELS[m] + '&nbsp;#';
+  show(0);
+}
+document.getElementById('m_pack').onclick = () => setMode('pack');
+document.getElementById('m_box').onclick = () => setMode('box');
+document.getElementById('m_starter').onclick = () => setMode('starter');
+document.getElementById('m_starterbox').onclick = () => setMode('starterbox');
+document.getElementById('first').onclick = () => show(0);
+document.getElementById('prev').onclick = () => show(current - 1);
+document.getElementById('next').onclick = () => show(current + 1);
+document.getElementById('random').onclick = () => show(Math.floor(Math.random() * rangeFor(mode)));
+document.getElementById('packno').onchange = (e) => show(Number(e.target.value) || 0);
+document.getElementById('debug').onclick = (e) => {
+  const on = document.body.classList.toggle('debug-on');
+  e.target.classList.toggle('on', on);
+};
+show(0); // first paint = the first-ever Alpha booster pack
+</script>
+</body>
+</html>

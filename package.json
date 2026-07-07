@@ -1,0 +1,19 @@
+{
+  "name": "crackpack",
+  "version": "0.0.0",
+  "description": "Realistic Magic: The Gathering pack-collation simulator",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --test 'test/**/*.test.ts'",
+    "demo": "node examples/open-a-pack.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["mtg", "magic-the-gathering", "collation", "packs", "simulation"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}
