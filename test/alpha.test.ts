@@ -2,9 +2,18 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { OpenedCard, Rarity } from '../src/types.ts';
 import { alpha } from '../src/sets/alpha/index.ts';
+import { getSet, sets } from '../src/sets/index.ts';
 import { openPack, openPacks } from '../src/assembler.ts';
 
 const RARITIES: Rarity[] = ['common', 'uncommon', 'rare'];
+
+test("Alpha's set code is the lowercase Scryfall/MTGJSON code 'lea'", () => {
+  assert.equal(alpha.code, 'lea');
+  assert.equal(getSet('lea'), alpha);
+  assert.equal(getSet('LEA'), alpha); // case-insensitive lookup
+  assert.equal(sets.lea, alpha);
+  assert.throws(() => getSet('zzz'));
+});
 
 test('every Alpha sheet is 11 × 11 (121 slots)', () => {
   for (const r of RARITIES) {

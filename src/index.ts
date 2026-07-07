@@ -18,3 +18,4 @@ export type { StripedWalkOptions } from './collation/striped.ts';
 export { openPack, openPacks } from './assembler.ts';
 export type { OpenOptions } from './assembler.ts';
 export { alpha } from './sets/alpha/index.ts';
+export { sets, getSet } from './sets/index.ts';
