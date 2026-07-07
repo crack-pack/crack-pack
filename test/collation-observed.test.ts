@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { CardEntry } from '../src/types.ts';
-import { alpha } from '../src/sets/alpha/index.ts';
+import { lea } from '../src/sets/lea/index.ts';
 import { stripedWalk } from '../src/collation/striped.ts';
 
 /**
@@ -29,7 +29,7 @@ function label(c: CardEntry): string {
 }
 
 function toGrid(rarity: 'common' | 'uncommon' | 'rare'): CardEntry[][] {
-  const s = alpha.sheets[rarity];
+  const s = lea.sheets[rarity];
   const g: CardEntry[][] = [];
   for (let r = 0; r < s.rows; r++) g.push(s.cards.slice(r * s.cols, (r + 1) * s.cols));
   return g;

@@ -26,7 +26,7 @@ const data = sheets as unknown as { common: string[][]; uncommon: string[][]; ra
  * Limited Edition Alpha (1993). Striped collation on three 11×11 sheets.
  * Pack: 11 commons + 3 uncommons + 1 rare (common → uncommon → rare).
  */
-export const alpha: SetDefinition = {
+export const lea: SetDefinition = {
   code: 'lea',
   name: 'Limited Edition Alpha',
   collation: 'striped',

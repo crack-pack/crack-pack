@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.dirname(new URL(import.meta.url).pathname);
-const SHEETS = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/sets/alpha/sheets.json'), 'utf8'));
+const SHEETS = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/sets/lea/sheets.json'), 'utf8'));
 
 // --- Engine port (kept in lockstep with src/; see collation/striped.ts, assembler.ts) ---
 // Defined as a string so the SAME code is both parity-checked here and shipped

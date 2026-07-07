@@ -25,10 +25,10 @@ Alpha's collation is **deterministic**: each sheet is cut by a striped walk whos
 ## Usage
 
 ```ts
-import { alpha, openPack, openPacks } from 'crackpack';
+import { lea, openPack, openPacks } from 'crackpack';
 
-const pack = openPack(alpha, { seed: 42 });   // one reproducible pack
-const box = openPacks(alpha, 36);              // a correlated 36-pack box (random)
+const pack = openPack(lea, { seed: 42 });   // one reproducible pack
+const box = openPacks(lea, 36);              // a correlated 36-pack box (random)
 ```
 
 Run with Node 22.18+ (no build step — Node strips the types):

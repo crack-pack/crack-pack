@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { CardEntry } from '../src/types.ts';
-import { alpha } from '../src/sets/alpha/index.ts';
+import { lea } from '../src/sets/lea/index.ts';
 import { stripedWalk, cyclicWidths, stripedPeriod } from '../src/collation/striped.ts';
 
 const ROWS = 11, COLS = 11, CYCLE = [2, 3, 4, 5];
 
 function uncommonGrid(): CardEntry[][] {
-  const s = alpha.sheets.uncommon;
+  const s = lea.sheets.uncommon;
   const g: CardEntry[][] = [];
   for (let r = 0; r < s.rows; r++) g.push(s.cards.slice(r * s.cols, (r + 1) * s.cols));
   return g;
