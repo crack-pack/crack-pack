@@ -8,9 +8,11 @@ dist/
 .claude/
 
 # Raw research source data — large, not part of the library
-# (the distilled sheet data lives in src/sets/alpha/sheets.json)
-Alpha/
-Alpha 2/
+# (the distilled sheet data lives in src/sets/alpha/sheets.json).
+# Anchored to repo root with a leading slash so they don't match src/sets/alpha/
+# (macOS git has core.ignorecase=true, so an unanchored "Alpha/" would).
+/Alpha/
+/Alpha 2/
 *.numbers
 *.xlsx
 *.pdf
