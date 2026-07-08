@@ -61,10 +61,11 @@ npm run demo 42   # open a pack
 
 ## Demo
 
-`node build-web.mjs` generates a self-contained `web/index.html` that opens
-booster packs, booster boxes (36), starter decks, and starter boxes (10) across
-a set selector (LEA / LEB / 2ED), with card art from Scryfall. The build verifies
-the in-page engine reproduces the library's canonical first pack before writing.
+A self-contained web pack opener — booster packs, booster boxes (36), starter
+decks, and starter boxes (10) across a set selector (LEA / LEB / 2ED), with card
+art from Scryfall — lives in its own repo,
+[**crack-pack-demo**](https://github.com/crack-pack/crack-pack-demo), and is
+deployed at <https://crack-pack.netlify.app/>.
 
 ## Data & validation
 
