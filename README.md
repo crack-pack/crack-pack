@@ -1,4 +1,4 @@
-# crackpack
+# crack-pack
 
 A dependency-free TypeScript library that simulates Magic: The Gathering pack
 openings by modelling physical **print-sheet collation** rather than flat rarity
@@ -39,7 +39,7 @@ free choice is `N` — supplied explicitly via `startPack`, or derived from `see
 ## Usage
 
 ```ts
-import { getSet, openPack, openPacks } from 'crackpack';
+import { getSet, openPack, openPacks } from 'crack-pack';
 
 const lea = getSet('lea');
 const first = openPack(lea, { startPack: 0 }); // the canonical first-ever pack

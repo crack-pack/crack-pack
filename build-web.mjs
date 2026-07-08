@@ -118,7 +118,7 @@ console.log('✅ Parity confirmed — web engine reproduces the canonical first-
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function getJson(url, tries = 6) {
   for (let i = 0; i < tries; i++) {
-    const r = await fetch(url, { headers: { 'User-Agent': 'crackpack/0.1 (pack collation demo)', 'Accept': 'application/json' } });
+    const r = await fetch(url, { headers: { 'User-Agent': 'crack-pack/0.1 (pack collation demo)', 'Accept': 'application/json' } });
     if (r.status === 429) { await sleep(1500 * (i + 1)); continue; }
     if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + url);
     return r.json();
@@ -165,7 +165,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>crackpack — Alpha pack opener</title>
+<title>crack-pack — Alpha pack opener</title>
 <style>
   :root { --bg:#0e0f13; --panel:#171922; --ink:#eef1f7; --muted:#9aa3b2;
           --common:#c9ccd6; --uncommon:#9fb6d6; --rare:#e6b455; --line:#262a36; }
@@ -220,7 +220,7 @@ const html = `<!doctype html>
 </head>
 <body>
   <header>
-    <h1><span>crackpack</span> · <span id="setname">Limited Edition Alpha</span></h1>
+    <h1><span>crack-pack</span> · <span id="setname">Limited Edition Alpha</span></h1>
     <div class="sub">Deterministic striped collation — stripe cycle 2,3,4,5 · packs cut pack-aligned from the print sheets</div>
   </header>
   <div class="controls">
@@ -250,7 +250,7 @@ const html = `<!doctype html>
   <div id="dbgpanel"></div>
   <div class="pack" id="pack"></div>
   <footer>
-    A <b>crackpack</b> demo. Card images &amp; data via <a href="https://scryfall.com" target="_blank" rel="noopener">Scryfall</a>;
+    A <b>crack-pack</b> demo. Card images &amp; data via <a href="https://scryfall.com" target="_blank" rel="noopener">Scryfall</a>;
     Magic: The Gathering is © Wizards of the Coast. Collation model from <a href="https://www.lethe.xyz/mtg/collation/" target="_blank" rel="noopener">The Collation Project</a>.
   </footer>
 
