@@ -12,6 +12,7 @@ so a pack is a correlated run of cards and a box is not N independent packs.
 | `lea` | Limited Edition Alpha (1993) | striped, three 11×11 sheets |
 | `leb` | Limited Edition Beta (1993) | striped, three 11×11 sheets |
 | `2ed` | Unlimited Edition (1993) | striped; reuses Beta's sheet layout |
+| `arn` | Arabian Nights (1993) | striped, two 11×11 sheets (no rare); per-sheet width cycles |
 
 ## Core model
 
@@ -19,8 +20,8 @@ so a pack is a correlated run of cards and a box is not N independent packs.
 | --- | --- |
 | `Sheet` | Ordered 11×11 grid of card positions; basic lands are filler and can appear in any slot. |
 | `CollationMethod` | How a sheet is walked into a stream. `striped` implemented; `sequential` planned. |
-| `stripeCycle` | Repeating stripe-width cycle (Alpha `[2,3,4,5]`); collation is deterministic given it. |
-| `PackLayout` | Cards drawn per sheet, in order. Booster: 11C / 3U / 1R. Starter: 45C / 13U / 2R. |
+| `stripeCycle` | Repeating stripe-width cycle (Alpha `[2,3,4,5]`); collation is deterministic given it. Either one cycle for the whole set, or a per-rarity map when sheets stripe differently (Arabian Nights: common `[3,4,5]`, uncommon `[3,4]`). |
+| `PackLayout` | Cards drawn per sheet, in order. Booster: 11C / 3U / 1R. Starter: 45C / 13U / 2R. Arabian Nights: 6C / 2U (no rare). |
 | `SetDefinition` | `code`, `name`, `sheets`, `layout`, `stripeCycle`; resolved via `getSet(code)` / `sets`. |
 
 ### Striped collation
@@ -80,3 +81,4 @@ sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
 - Beta/Unlimited add `Circle of Protection: Black` (common) and `Volcanic Island` (rare); Alpha replaced the latter with a basic Island.
 - Unlimited reuses Beta's exact sheet layout and collation (only the printed cards differ — white border).
 - No half-sheet splitting; whole 11-row sheets only.
+- Arabian Nights has no rare sheet — rarity is emergent from how often a card repeats (common: 16×4 + 9×5 + Desert ×11 + Mountain ×1; uncommon: 33×2 + 17×3 + Oasis ×4, both checksum-validated). 15 common cards have "light"/"dark" versions (the earlier bottom-right 6×6 quadrant), kept verbatim in the sheet data. The two sheets stripe with different width cycles, giving 1694 distinct packs.

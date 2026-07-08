@@ -7,7 +7,7 @@ import { stripedWalk, cyclicWidths, stripedPeriod } from '../src/collation/strip
 const ROWS = 11, COLS = 11, CYCLE = [2, 3, 4, 5];
 
 function uncommonGrid(): CardEntry[][] {
-  const s = lea.sheets.uncommon;
+  const s = lea.sheets.uncommon!;
   const g: CardEntry[][] = [];
   for (let r = 0; r < s.rows; r++) g.push(s.cards.slice(r * s.cols, (r + 1) * s.cols));
   return g;

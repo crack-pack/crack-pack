@@ -11,7 +11,7 @@ const EXPECTED_NONLAND = { common: 75, uncommon: 95, rare: 117 };
 
 test('Beta sheets are 11×11 with the right non-land (rarity) totals', () => {
   for (const r of RARITIES) {
-    const s = leb.sheets[r];
+    const s = leb.sheets[r]!;
     assert.equal(s.rows, 11);
     assert.equal(s.cols, 11);
     assert.equal(s.cards.length, 121);
@@ -22,15 +22,15 @@ test('Beta sheets are 11×11 with the right non-land (rarity) totals', () => {
 
 test('Beta basic lands use variants A/B/C only', () => {
   for (const r of RARITIES) {
-    for (const c of leb.sheets[r].cards) {
+    for (const c of leb.sheets[r]!.cards) {
       if (c.isBasicLand) assert.ok(c.variant === 'A' || c.variant === 'B' || c.variant === 'C', `${c.name} variant ${c.variant}`);
     }
   }
 });
 
 test('Beta has the two cards Alpha lacked: CoP: Black (common) and Volcanic Island (rare)', () => {
-  assert.ok(leb.sheets.common.cards.some((c) => c.name === 'Circle of Protection: Black'));
-  assert.ok(leb.sheets.rare.cards.some((c) => c.name === 'Volcanic Island'));
+  assert.ok(leb.sheets.common!.cards.some((c) => c.name === 'Circle of Protection: Black'));
+  assert.ok(leb.sheets.rare!.cards.some((c) => c.name === 'Volcanic Island'));
 });
 
 test('set registry resolves leb and 2ed', () => {
@@ -42,8 +42,8 @@ test('set registry resolves leb and 2ed', () => {
 
 test('Unlimited reuses Beta’s exact sheet layout', () => {
   for (const r of RARITIES) {
-    const a = leb.sheets[r].cards.map((c) => (c.isBasicLand ? `${c.name} (${c.variant})` : c.name));
-    const b = unlimited.sheets[r].cards.map((c) => (c.isBasicLand ? `${c.name} (${c.variant})` : c.name));
+    const a = leb.sheets[r]!.cards.map((c) => (c.isBasicLand ? `${c.name} (${c.variant})` : c.name));
+    const b = unlimited.sheets[r]!.cards.map((c) => (c.isBasicLand ? `${c.name} (${c.variant})` : c.name));
     assert.deepEqual(b, a);
   }
 });

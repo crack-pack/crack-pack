@@ -29,7 +29,7 @@ function label(c: CardEntry): string {
 }
 
 function toGrid(rarity: 'common' | 'uncommon' | 'rare'): CardEntry[][] {
-  const s = lea.sheets[rarity];
+  const s = lea.sheets[rarity]!;
   const g: CardEntry[][] = [];
   for (let r = 0; r < s.rows; r++) g.push(s.cards.slice(r * s.cols, (r + 1) * s.cols));
   return g;

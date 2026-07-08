@@ -17,7 +17,7 @@ test("Alpha's set code is the lowercase Scryfall/MTGJSON code 'lea'", () => {
 
 test('every Alpha sheet is 11 × 11 (121 slots)', () => {
   for (const r of RARITIES) {
-    const s = lea.sheets[r];
+    const s = lea.sheets[r]!;
     assert.equal(s.rows, 11);
     assert.equal(s.cols, 11);
     assert.equal(s.cards.length, 121);
@@ -25,7 +25,7 @@ test('every Alpha sheet is 11 × 11 (121 slots)', () => {
 });
 
 test('non-land counts match known Alpha rarity totals', () => {
-  const nonLand = (r: Rarity) => lea.sheets[r].cards.filter((c) => !c.isBasicLand).length;
+  const nonLand = (r: Rarity) => lea.sheets[r]!.cards.filter((c) => !c.isBasicLand).length;
   assert.equal(nonLand('common'), 74);
   assert.equal(nonLand('uncommon'), 95);
   assert.equal(nonLand('rare'), 116);
@@ -33,7 +33,7 @@ test('non-land counts match known Alpha rarity totals', () => {
 
 test('common-sheet basic-land fill is 9P / 10I / 9S / 9M / 10F', () => {
   const counts: Record<string, number> = {};
-  for (const c of lea.sheets.common.cards) {
+  for (const c of lea.sheets.common!.cards) {
     if (c.isBasicLand) counts[c.name] = (counts[c.name] ?? 0) + 1;
   }
   assert.deepEqual(counts, { Plains: 9, Island: 10, Swamp: 9, Mountain: 9, Forest: 10 });
@@ -41,7 +41,7 @@ test('common-sheet basic-land fill is 9P / 10I / 9S / 9M / 10F', () => {
 
 test('all basic-land variants are resolved to A or B (no anomalies remain)', () => {
   for (const r of RARITIES) {
-    for (const c of lea.sheets[r].cards) {
+    for (const c of lea.sheets[r]!.cards) {
       if (!c.isBasicLand) continue;
       assert.equal(c.variantUnresolved, undefined, `${r}: ${c.name} still unresolved`);
       assert.ok(c.variant === 'A' || c.variant === 'B', `${r}: ${c.name} has variant ${c.variant}`);
@@ -50,7 +50,7 @@ test('all basic-land variants are resolved to A or B (no anomalies remain)', () 
 });
 
 test('the former "Mountain (C)" (uncommon r7c11) is now Mountain (B) = lea/293', () => {
-  const cell = lea.sheets.uncommon.cards[6 * 11 + 10]; // row 7, col 11 (0-indexed 6,10)
+  const cell = lea.sheets.uncommon!.cards[6 * 11 + 10]; // row 7, col 11 (0-indexed 6,10)
   assert.equal(cell.name, 'Mountain');
   assert.equal(cell.variant, 'B');
 });
@@ -66,9 +66,9 @@ test('a pack is 15 cards: 11 common + 3 uncommon + 1 rare', () => {
 
 test('every drawn card actually lives on the sheet it was drawn from', () => {
   const onSheet: Record<Rarity, Set<string>> = {
-    common: new Set(lea.sheets.common.cards.map((c) => c.name)),
-    uncommon: new Set(lea.sheets.uncommon.cards.map((c) => c.name)),
-    rare: new Set(lea.sheets.rare.cards.map((c) => c.name)),
+    common: new Set(lea.sheets.common!.cards.map((c) => c.name)),
+    uncommon: new Set(lea.sheets.uncommon!.cards.map((c) => c.name)),
+    rare: new Set(lea.sheets.rare!.cards.map((c) => c.name)),
   };
   for (const pack of openPacks(lea, 200, { seed: 7 })) {
     for (const card of pack as OpenedCard[]) {

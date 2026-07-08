@@ -40,19 +40,31 @@ export interface PackLayout {
 
 export type CollationMethod = 'striped' | 'sequential';
 
+/**
+ * Stripe-width source for striped collation. Either a single repeating cycle
+ * applied to every sheet (Alpha = [2,3,4,5]), or a per-rarity map when sheets
+ * stripe differently (Arabian Nights: common [3,4,5], uncommon [3,4]).
+ */
+export type StripeWidths = number[] | Partial<Record<Rarity, number[]>>;
+
 /** Everything needed to open packs of one set. */
 export interface SetDefinition {
   code: string;
   name: string;
   collation: CollationMethod;
-  sheets: Record<Rarity, Sheet>;
+  /**
+   * The print sheets, keyed by the slot they feed. Most sets have all three
+   * (common/uncommon/rare); some — e.g. Arabian Nights — have no rare sheet.
+   */
+  sheets: Partial<Record<Rarity, Sheet>>;
   layout: PackLayout;
   /**
-   * For striped collation: the repeating stripe-width cycle (Alpha = [2,3,4,5]).
-   * Collation is deterministic given this cycle; the RNG only picks the
-   * pack-aligned starting offset. Defaults to [2,3,4,5] if omitted.
+   * For striped collation: the repeating stripe-width cycle. Collation is
+   * deterministic given the widths; the RNG only picks the pack-aligned starting
+   * offset. A bare array applies to every sheet; a per-rarity map lets sheets
+   * stripe independently. Defaults to [2,3,4,5] if omitted.
    */
-  stripeCycle?: number[];
+  stripeCycle?: StripeWidths;
 }
 
 /** A card as it comes out of a pack. */
