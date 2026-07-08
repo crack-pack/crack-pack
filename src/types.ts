@@ -47,6 +47,20 @@ export type CollationMethod = 'striped' | 'sequential';
  */
 export type StripeWidths = number[] | Partial<Record<Rarity, number[]>>;
 
+/**
+ * A sheet collated as two independent horizontal half-sheets, each walked on its
+ * own. Legends' uncommon sheet works this way: the top `topRows` rows are the
+ * "A" half and the remaining rows are the "B" half, and a whole booster box
+ * draws its cards for that rarity from a single half.
+ */
+export interface SheetSplit {
+  /** Rows in the top ("A") half; the rest form the bottom ("B") half. */
+  topRows: number;
+}
+
+/** Which half of a split sheet a run/box draws from. */
+export type SheetHalf = 'A' | 'B';
+
 /** Everything needed to open packs of one set. */
 export interface SetDefinition {
   code: string;
@@ -65,6 +79,11 @@ export interface SetDefinition {
    * stripe independently. Defaults to [2,3,4,5] if omitted.
    */
   stripeCycle?: StripeWidths;
+  /**
+   * Rarities whose sheet is collated as two half-sheets (Legends uncommons).
+   * A run draws that rarity from one half, chosen via OpenOptions.half.
+   */
+  splitSheets?: Partial<Record<Rarity, SheetSplit>>;
 }
 
 /** A card as it comes out of a pack. */

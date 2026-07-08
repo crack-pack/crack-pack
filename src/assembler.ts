@@ -1,4 +1,4 @@
-import type { CardEntry, OpenedCard, Pack, Rarity, SetDefinition, Sheet } from './types.ts';
+import type { CardEntry, OpenedCard, Pack, Rarity, SetDefinition, Sheet, SheetHalf } from './types.ts';
 import { makeRng } from './rng.ts';
 import { stripedWalk, cyclicWidths, stripedPeriod } from './collation/striped.ts';
 
@@ -31,6 +31,18 @@ function toGrid(sheet: Sheet): CardEntry[][] {
   return grid;
 }
 
+/**
+ * The grid a rarity's walk runs over: the whole sheet, or — for a split sheet
+ * (Legends uncommons) — just the chosen half (top `topRows` rows for 'A', the
+ * rest for 'B'). Each half is collated independently.
+ */
+function gridFor(set: SetDefinition, rarity: Rarity, half: SheetHalf): CardEntry[][] {
+  const full = toGrid(sheetFor(set, rarity));
+  const split = set.splitSheets?.[rarity];
+  if (!split) return full;
+  return half === 'B' ? full.slice(split.topRows) : full.slice(0, split.topRows);
+}
+
 export interface OpenOptions {
   /**
    * Which pack index to start the run at. Pack 0 is the very first pack a fresh
@@ -43,6 +55,11 @@ export interface OpenOptions {
    * → same run. Omit both for a random pack.
    */
   seed?: number;
+  /**
+   * For sets with a split sheet (Legends uncommons): which half this run/box
+   * draws that rarity from. A whole box uses one half. Defaults to 'A'.
+   */
+  half?: SheetHalf;
 }
 
 /**
@@ -61,12 +78,19 @@ export function openPacks(set: SetDefinition, count: number, opts: OpenOptions =
     throw new Error(`collation method '${set.collation}' is not implemented yet`);
   }
 
+  const half: SheetHalf = opts.half ?? 'A';
+
   // How many cards each sheet supplies per pack (summed in case a sheet feeds
   // more than one slot).
   const perPack = new Map<Rarity, number>();
   for (const slot of set.layout.slots) {
     perPack.set(slot.sheet, (perPack.get(slot.sheet) ?? 0) + slot.count);
   }
+
+  // Resolve each rarity's walk grid once (whole sheet, or the chosen half for a
+  // split sheet), so period and stream construction agree on dimensions.
+  const grids = new Map<Rarity, CardEntry[][]>();
+  for (const rarity of perPack.keys()) grids.set(rarity, gridFor(set, rarity, half));
 
   // The whole pack sequence repeats when every sheet realigns simultaneously.
   // Each sheet's walk realigns after `stripedPeriod` cards; drawing `perPack`
@@ -75,8 +99,8 @@ export function openPacks(set: SetDefinition, count: number, opts: OpenOptions =
   // that sheet's card period — e.g. Alpha's 1694.)
   let period = 1;
   for (const [rarity, n] of perPack) {
-    const sheet = sheetFor(set, rarity);
-    const cardPeriod = stripedPeriod(widthsFor(set, rarity), sheet.rows, sheet.cols);
+    const g = grids.get(rarity) as CardEntry[][];
+    const cardPeriod = stripedPeriod(widthsFor(set, rarity), g.length, g[0].length);
     period = lcm(period, cardPeriod / gcd(cardPeriod, n));
   }
 
@@ -91,8 +115,8 @@ export function openPacks(set: SetDefinition, count: number, opts: OpenOptions =
   const streams = new Map<Rarity, () => CardEntry>();
   for (const slot of set.layout.slots) {
     if (streams.has(slot.sheet)) continue;
-    const sheet = sheetFor(set, slot.sheet);
-    const next = stripedWalk(toGrid(sheet), { nextWidth: cyclicWidths(widthsFor(set, slot.sheet)) });
+    const g = grids.get(slot.sheet) as CardEntry[][];
+    const next = stripedWalk(g, { nextWidth: cyclicWidths(widthsFor(set, slot.sheet)) });
     const skip = (perPack.get(slot.sheet) as number) * startPack;
     for (let i = 0; i < skip; i++) next();
     streams.set(slot.sheet, next);

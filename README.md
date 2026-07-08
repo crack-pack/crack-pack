@@ -14,6 +14,7 @@ so a pack is a correlated run of cards and a box is not N independent packs.
 | `2ed` | Unlimited Edition (1993) | striped; reuses Beta's sheet layout |
 | `arn` | Arabian Nights (1993) | striped, two 11×11 sheets (no rare); per-sheet width cycles |
 | `atq` | Antiquities (1994) | striped, two 11×11 sheets (no rare); stripe widths provisional (assumed = ARN, pending validation) |
+| `leg` | Legends (1994) | striped, three 11×11 sheets; uncommon sheet is **half-split** (a box draws from one half — pass `half: 'A' \| 'B'`); collation provisional |
 
 ## Core model
 
@@ -84,3 +85,6 @@ sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
 - No half-sheet splitting; whole 11-row sheets only.
 - Arabian Nights has no rare sheet — rarity is emergent from how often a card repeats (common: 16×4 + 9×5 + Desert ×11 + Mountain ×1; uncommon: 33×2 + 17×3 + Oasis ×4, both checksum-validated). 15 common cards have "light"/"dark" versions (the earlier bottom-right 6×6 quadrant), kept verbatim in the sheet data. The two sheets stripe with different width cycles, giving 1694 distinct packs.
 - Antiquities is like Arabian Nights: no rare sheet, rarity by repeat count (common: 11×C1 + 5×C2 + 25×C4; uncommon: 26×U1 + 4×U2 + 29×U3, both checksum-validated). Five non-basic lands (Urza's Mine/Power Plant/Tower, Mishra's Factory, Strip Mine) have four art variants each, notated `(A)`–`(D)`. **Stripe widths are provisional** — the sheet grids are validated, but the stripe order (which cards pack together) is assumed equal to Arabian Nights pending validation against a box-opening video.
+- Legends has three sheets (common 75, uncommon 114, rare 121 — checksum-validated). Its uncommon sheet is collated as two half-sheets — top 6 rows ("A", incl. Mana Drain) and bottom 5 rows ("B", incl. Karakas) — and a whole box draws uncommons from one half; pass `openPacks(leg, n, { half: 'A' | 'B' })`. **Provisional**: stripe widths assumed `[2,3,4,5]`, and the half split assumed row-major top-6/bottom-5 (doesn't perfectly reproduce the source's "only Hammerheim on both halves"), pending validation against box openings.
+
+See [ASSUMPTIONS.md](./ASSUMPTIONS.md) for the full list of modelling assumptions and their validation status.
