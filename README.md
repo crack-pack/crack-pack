@@ -36,6 +36,12 @@ uncommons = uncommon-positions `3N…3N+2`, commons = common-positions `11N…11
 Pack 0 is the first pack of a fresh run; there are 1694 distinct packs. The only
 free choice is `N` — supplied explicitly via `startPack`, or derived from `seed`.
 
+## Install
+
+```sh
+npm install crack-pack
+```
+
 ## Usage
 
 ```ts
