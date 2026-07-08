@@ -22,4 +22,5 @@ export { lea } from './sets/lea/index.ts';
 export { leb } from './sets/leb/index.ts';
 export { unlimited } from './sets/2ed/index.ts';
 export { arn } from './sets/arn/index.ts';
+export { atq } from './sets/atq/index.ts';
 export { sets, getSet } from './sets/index.ts';

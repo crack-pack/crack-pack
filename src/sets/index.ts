@@ -3,6 +3,7 @@ import { lea } from './lea/index.ts';
 import { leb } from './leb/index.ts';
 import { unlimited } from './2ed/index.ts';
 import { arn } from './arn/index.ts';
+import { atq } from './atq/index.ts';
 
 /**
  * All known sets, keyed by their lowercase set code (the Scryfall / MTGJSON
@@ -14,6 +15,7 @@ export const sets: Record<string, SetDefinition> = {
   leb,
   '2ed': unlimited,
   arn,
+  atq,
 };
 
 /** Look up a set by its code (case-insensitive). Throws if the code is unknown. */

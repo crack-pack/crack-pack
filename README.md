@@ -13,6 +13,7 @@ so a pack is a correlated run of cards and a box is not N independent packs.
 | `leb` | Limited Edition Beta (1993) | striped, three 11×11 sheets |
 | `2ed` | Unlimited Edition (1993) | striped; reuses Beta's sheet layout |
 | `arn` | Arabian Nights (1993) | striped, two 11×11 sheets (no rare); per-sheet width cycles |
+| `atq` | Antiquities (1994) | striped, two 11×11 sheets (no rare); stripe widths provisional (assumed = ARN, pending validation) |
 
 ## Core model
 
@@ -82,3 +83,4 @@ sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
 - Unlimited reuses Beta's exact sheet layout and collation (only the printed cards differ — white border).
 - No half-sheet splitting; whole 11-row sheets only.
 - Arabian Nights has no rare sheet — rarity is emergent from how often a card repeats (common: 16×4 + 9×5 + Desert ×11 + Mountain ×1; uncommon: 33×2 + 17×3 + Oasis ×4, both checksum-validated). 15 common cards have "light"/"dark" versions (the earlier bottom-right 6×6 quadrant), kept verbatim in the sheet data. The two sheets stripe with different width cycles, giving 1694 distinct packs.
+- Antiquities is like Arabian Nights: no rare sheet, rarity by repeat count (common: 11×C1 + 5×C2 + 25×C4; uncommon: 26×U1 + 4×U2 + 29×U3, both checksum-validated). Five non-basic lands (Urza's Mine/Power Plant/Tower, Mishra's Factory, Strip Mine) have four art variants each, notated `(A)`–`(D)`. **Stripe widths are provisional** — the sheet grids are validated, but the stripe order (which cards pack together) is assumed equal to Arabian Nights pending validation against a box-opening video.
