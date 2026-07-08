@@ -1,8 +1,10 @@
 name: Publish to npm
 
 # Publishes crack-pack to npm when a version tag (e.g. v0.1.0) is pushed.
-# `npm publish` runs the package's prepublishOnly gate (clean → build → test)
-# automatically, so a broken build never ships.
+# Uses npm "trusted publishing" via OIDC — no NPM_TOKEN secret, no token to
+# rotate. Requires a Trusted Publisher configured on the npm package settings
+# (GitHub Actions provider, repo crack-pack/crack-pack, workflow publish.yml).
+# `npm publish` runs the package's prepublishOnly gate (clean → build → test).
 on:
   push:
     tags:
@@ -13,12 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write # required for OIDC trusted publishing
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24' # bundles npm 11.x
           registry-url: 'https://registry.npmjs.org'
+      - run: npm install -g npm@latest # trusted publishing needs npm >= 11.5.1
       - run: npm ci
       - name: Verify tag matches package.json version
         run: |
@@ -27,5 +31,3 @@ jobs:
           echo "tag=$TAG  package.json=$PKG"
           test "$TAG" = "$PKG"
       - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
