@@ -1,8 +1,8 @@
 /** Which slot type a sheet feeds in a pack. */
 export type Rarity = 'common' | 'uncommon' | 'rare';
 
-/** Alpha basic lands come in exactly two versions each. */
-export type BasicLandVariant = 'A' | 'B';
+/** Basic-land art variant: Alpha has A/B, Beta and Unlimited add C. */
+export type BasicLandVariant = 'A' | 'B' | 'C';
 
 /** A single position on a print sheet. */
 export interface CardEntry {

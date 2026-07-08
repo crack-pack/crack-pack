@@ -5,7 +5,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.dirname(new URL(import.meta.url).pathname);
-const SHEETS = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/sets/lea/sheets.json'), 'utf8'));
+const readSheets = (code) => JSON.parse(fs.readFileSync(path.join(ROOT, `src/sets/${code}/sheets.json`), 'utf8'));
+const SHEETS_LEA = readSheets('lea');
+const SHEETS_LEB = readSheets('leb'); // Unlimited (2ed) reuses Beta's grids
 
 // --- Engine port (kept in lockstep with src/; see collation/striped.ts, assembler.ts) ---
 // Defined as a string so the SAME code is both parity-checked here and shipped
@@ -17,7 +19,7 @@ const LAYOUTS = {
   starter: [ ['common', 45], ['uncommon', 13], ['rare', 2] ],  // 60-card starter deck
 };
 const LAYOUT = LAYOUTS.booster;
-const LAND = /^(Plains|Island|Swamp|Mountain|Forest) \\(([A-Z])\\)$/;
+const LAND = /^(Plains|Island|Swamp|Mountain|Forest) \\(([A-C])\\)$/;
 const mod = (n, m) => ((n % m) + m) % m;
 
 function makeRng(seed) {
@@ -33,10 +35,9 @@ function makeRng(seed) {
 function parseCell(raw) {
   const m = LAND.exec(raw);
   if (!m) return { name: raw, isBasicLand: false };
-  const v = m[2];
-  return (v === 'A' || v === 'B') ? { name: m[1], isBasicLand: true, variant: v } : { name: m[1], isBasicLand: true };
+  return { name: m[1], isBasicLand: true, variant: m[2] };
 }
-function grid(sheet) { return SHEETS[sheet].map((row) => row.map(parseCell)); }
+function grid(sheetName, sheets) { return sheets[sheetName].map((row) => row.map(parseCell)); }
 function cyclicWidths(cycle) { let i = 0; return () => cycle[i++ % cycle.length]; }
 function stripedWalk(g, nextWidth) {
   const rows = g.length, cols = g[0].length;
@@ -59,7 +60,7 @@ function stripedPeriod(cycle, rows, cols) {
   }
   return cards;
 }
-function assemble(count, startIndex, layout) {
+function assemble(count, startIndex, layout, sheets) {
   layout = layout || LAYOUTS.booster;
   const perPack = new Map(); for (const [s, n] of layout) perPack.set(s, (perPack.get(s) || 0) + n);
   const period = stripedPeriod(CYCLE, 11, 11);
@@ -67,7 +68,7 @@ function assemble(count, startIndex, layout) {
   const streams = new Map(); const starts = [];
   for (const [sheet] of layout) {
     if (streams.has(sheet)) continue;
-    const next = stripedWalk(grid(sheet), cyclicWidths(CYCLE));
+    const next = stripedWalk(grid(sheet, sheets), cyclicWidths(CYCLE));
     const group = perPack.get(sheet);
     const skip = group * N; // all sheets share the unit index N (phase-locked)
     for (let i = 0; i < skip; i++) next();
@@ -88,14 +89,14 @@ function assemble(count, startIndex, layout) {
   }
   return { packs, starts, startPack: N, period };
 }
-function openPacks(count, startIndex) { return assemble(count, startIndex, LAYOUTS.booster).packs; }
+function openPacks(count, startIndex, sheets) { return assemble(count, startIndex, LAYOUTS.booster, sheets).packs; }
 function label(c) { return c.isBasicLand && c.variant ? c.name + ' (' + c.variant + ')' : c.name; }
 `;
 
 // --- Parity check against the TS engine's known seed-42 output ---
-const factory = new Function('SHEETS', ENGINE_JS + '\nreturn { openPacks, label };');
-const { openPacks, label } = factory(SHEETS);
-const pack = openPacks(1, 0)[0]; // the canonical first-ever pack
+const factory = new Function(ENGINE_JS + '\nreturn { openPacks, label };');
+const { openPacks, label } = factory();
+const pack = openPacks(1, 0, SHEETS_LEA)[0]; // the canonical first-ever Alpha pack
 const got = { common: [], uncommon: [], rare: [] };
 for (const c of pack) got[c.fromSheet].push(label(c));
 
@@ -124,14 +125,9 @@ async function getJson(url, tries = 6) {
   }
   throw new Error('rate-limited after retries: ' + url);
 }
-async function fetchLeaImages() {
-  const cacheFile = path.join(ROOT, 'web/.img-cache.json');
-  if (fs.existsSync(cacheFile)) {
-    console.log('Using cached image map (web/.img-cache.json).');
-    return JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
-  }
+async function fetchSetImages(code) {
   const map = {};
-  let url = 'https://api.scryfall.com/cards/search?q=set%3Alea&unique=prints&order=set';
+  let url = 'https://api.scryfall.com/cards/search?q=set%3A' + code + '&unique=prints&order=set';
   for (let page = 0; page < 6 && url; page++) {
     const data = await getJson(url);
     for (const c of data.data) {
@@ -141,12 +137,27 @@ async function fetchLeaImages() {
     url = data.has_more ? data.next_page : null;
     if (url) await sleep(150);
   }
-  fs.mkdirSync(path.join(ROOT, 'web'), { recursive: true });
-  fs.writeFileSync(cacheFile, JSON.stringify(map));
   return map;
 }
-const IMG_MAP = await fetchLeaImages();
-console.log('Fetched ' + Object.keys(IMG_MAP).length + ' card images from Scryfall.');
+async function fetchAllImages() {
+  const cacheFile = path.join(ROOT, 'web/.img-cache.json');
+  let cache = {};
+  if (fs.existsSync(cacheFile)) { try { cache = JSON.parse(fs.readFileSync(cacheFile, 'utf8')); } catch { /* rebuild */ } }
+  const out = {}; // clean object keyed only by set code
+  for (const code of ['lea', 'leb', '2ed']) {
+    if (cache[code] && Object.keys(cache[code]).length) {
+      out[code] = cache[code];
+    } else {
+      console.log('Fetching images for ' + code + ' …');
+      out[code] = await fetchSetImages(code);
+    }
+  }
+  fs.mkdirSync(path.join(ROOT, 'web'), { recursive: true });
+  fs.writeFileSync(cacheFile, JSON.stringify(out));
+  return out;
+}
+const IMG_MAPS = await fetchAllImages();
+console.log('Image maps: ' + Object.entries(IMG_MAPS).map(([k, v]) => k + '=' + Object.keys(v).length).join(', '));
 
 // --- Emit the HTML ---
 const html = `<!doctype html>
@@ -166,7 +177,8 @@ const html = `<!doctype html>
   h1 span { color:var(--rare); }
   .sub { color:var(--muted); font-size:13px; margin-top:4px; }
   .controls { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; padding:16px; }
-  input { background:var(--panel); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:9px 11px; width:120px; }
+  input, select { background:var(--panel); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:9px 11px; }
+  input { width:120px; }
   button { background:var(--rare); color:#241a06; border:0; border-radius:8px; padding:10px 16px; font-weight:700; cursor:pointer; }
   button.ghost { background:var(--panel); color:var(--ink); border:1px solid var(--line); }
   button:active { transform:translateY(1px); }
@@ -208,9 +220,18 @@ const html = `<!doctype html>
 </head>
 <body>
   <header>
-    <h1><span>crackpack</span> · Limited Edition Alpha</h1>
+    <h1><span>crackpack</span> · <span id="setname">Limited Edition Alpha</span></h1>
     <div class="sub">Deterministic striped collation — stripe cycle 2,3,4,5 · packs cut pack-aligned from the print sheets</div>
   </header>
+  <div class="controls">
+    <label style="color:var(--muted);font-size:13px">Set&nbsp;
+      <select id="setsel">
+        <option value="lea">Limited Edition Alpha (LEA)</option>
+        <option value="leb">Limited Edition Beta (LEB)</option>
+        <option value="2ed">Unlimited Edition (2ED)</option>
+      </select>
+    </label>
+  </div>
   <div class="controls">
     <button id="m_pack" class="ghost on">Booster pack</button>
     <button id="m_box" class="ghost">Booster box (36)</button>
@@ -234,12 +255,19 @@ const html = `<!doctype html>
   </footer>
 
 <script>
-const SHEETS = ${JSON.stringify(SHEETS)};
 ${ENGINE_JS}
 
-const SLOTS = [['common','Commons'],['uncommon','Uncommons'],['rare','Rare']];
-const IMG_MAP = ${JSON.stringify(IMG_MAP)};
-
+const SETS_DATA = ${JSON.stringify({
+  lea: { common: SHEETS_LEA.common, uncommon: SHEETS_LEA.uncommon, rare: SHEETS_LEA.rare },
+  leb: { common: SHEETS_LEB.common, uncommon: SHEETS_LEB.uncommon, rare: SHEETS_LEB.rare },
+})};
+const IMG_MAPS = ${JSON.stringify(IMG_MAPS)};
+const SETS = {
+  lea: { name: 'Limited Edition Alpha', sheets: SETS_DATA.lea },
+  leb: { name: 'Limited Edition Beta', sheets: SETS_DATA.leb },
+  '2ed': { name: 'Unlimited Edition', sheets: SETS_DATA.leb },
+};
+let currentSet = 'lea';
 const NAMES = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare' };
 
 function buildDebugPanel(result, kind) {
@@ -270,7 +298,7 @@ function renderUnit(result, kind) {
     for (const c of cards) {
       const card = document.createElement('div'); card.className = 'card ' + slot;
       const fb = document.createElement('div'); fb.className = 'fallback'; fb.textContent = label(c); card.appendChild(fb);
-      const url = IMG_MAP[c.name];
+      const url = IMG_MAPS[currentSet][c.name];
       if (url) {
         const img = document.createElement('img'); img.alt = label(c); img.loading = 'lazy';
         img.onerror = () => { img.remove(); }; // fall back to the name plate underneath
@@ -310,7 +338,7 @@ let mode = 'pack', current = 0;
 function renderBox(cfg, boxNum) {
   const units = unitCount(cfg.layout);
   const start = (cfg.box * boxNum) % units;
-  const { packs } = assemble(cfg.box, start, cfg.layout);
+  const { packs } = assemble(cfg.box, start, cfg.layout, SETS[currentSet].sheets);
   const boxes = units / gcd(units, cfg.box);
   const cardsPer = cfg.layout.reduce((a, kv) => a + kv[1], 0);
   const root = document.getElementById('pack'); root.innerHTML = '';
@@ -329,7 +357,7 @@ function renderBox(cfg, boxNum) {
     const row = document.createElement('div'); row.className = 'boxrow';
     for (const c of pack) {
       const mini = document.createElement('div'); mini.className = 'mini ' + c.fromSheet; mini.title = label(c);
-      const url = IMG_MAP[c.name];
+      const url = IMG_MAPS[currentSet][c.name];
       if (url) { const img = document.createElement('img'); img.loading = 'lazy'; img.alt = label(c); img.onerror = () => img.remove(); img.src = url.replace('/normal/', '/small/'); mini.appendChild(img); }
       row.appendChild(mini);
     }
@@ -340,7 +368,7 @@ function renderBox(cfg, boxNum) {
 
 function render() {
   const cfg = MODES[mode];
-  if (cfg.box === 1) renderUnit(assemble(1, current, cfg.layout), cfg.unit);
+  if (cfg.box === 1) renderUnit(assemble(1, current, cfg.layout, SETS[currentSet].sheets), cfg.unit);
   else renderBox(cfg, current);
 }
 function show(n) {
@@ -368,6 +396,11 @@ document.getElementById('packno').onchange = (e) => show(Number(e.target.value) 
 document.getElementById('debug').onclick = (e) => {
   const on = document.body.classList.toggle('debug-on');
   e.target.classList.toggle('on', on);
+};
+document.getElementById('setsel').onchange = (e) => {
+  currentSet = e.target.value;
+  document.getElementById('setname').textContent = SETS[currentSet].name;
+  show(0);
 };
 show(0); // first paint = the first-ever Alpha booster pack
 </script>

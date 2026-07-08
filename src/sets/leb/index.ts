@@ -5,12 +5,13 @@ import sheets from './sheets.json' with { type: 'json' };
 const data = sheets as unknown as { common: string[][]; uncommon: string[][]; rare: string[][] };
 
 /**
- * Limited Edition Alpha (1993). Striped collation on three 11×11 sheets.
- * Pack: 11 commons + 3 uncommons + 1 rare (common → uncommon → rare).
+ * Limited Edition Beta (1993). Striped collation on three 11×11 sheets — same
+ * method as Alpha, but with three basic-land variants (A/B/C), Circle of
+ * Protection: Black on the common sheet, and Volcanic Island on the rare sheet.
  */
-export const lea: SetDefinition = {
-  code: 'lea',
-  name: 'Limited Edition Alpha',
+export const leb: SetDefinition = {
+  code: 'leb',
+  name: 'Limited Edition Beta',
   collation: 'striped',
   sheets: {
     common: buildSheet('common', data.common),

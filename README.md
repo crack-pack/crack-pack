@@ -1,53 +1,75 @@
 # crackpack
 
-A low-level, dependency-free TypeScript library that simulates **Magic: The Gathering** pack openings *realistically* — by modelling the physical **print-sheet collation** process, not flat rarity odds.
+A dependency-free TypeScript library that simulates Magic: The Gathering pack
+openings by modelling physical **print-sheet collation** rather than flat rarity
+odds. Cards are cut from ordered print sheets in a deterministic striped pattern,
+so a pack is a correlated run of cards and a box is not N independent packs.
 
-Packs weren't 15 independent random cards. Cards were cut from ordered print sheets in patterns, so a pack contains correlated runs of cards and a box is not 36 independent packs. `crackpack` reproduces that.
+## Sets
 
-> `crackpack` is the collation engine; it ships with a self-contained visual pack-opening demo (`web/pack.html`).
-
-## Status
-
-First set: **Limited Edition Alpha (1993)** — striped collation on three 11×11 sheets.
+| Code | Set | Collation |
+| --- | --- | --- |
+| `lea` | Limited Edition Alpha (1993) | striped, three 11×11 sheets |
+| `leb` | Limited Edition Beta (1993) | striped, three 11×11 sheets |
+| `2ed` | Unlimited Edition (1993) | striped; reuses Beta's sheet layout |
 
 ## Core model
 
-| Concept | Meaning |
+| Type | Meaning |
 | --- | --- |
-| `Sheet` | An ordered 11×11 grid of card positions (basic lands are filler, so they can land in any slot). |
-| `CollationMethod` | How a sheet is walked into a stream. `striped` (Alpha) is implemented; `sequential` is planned. |
-| `stripeCycle` | The repeating stripe-width cycle. Alpha = `[2,3,4,5]`; collation is **deterministic** given the cycle. |
-| `PackLayout` | Which sheets feed which slots, in order. Alpha: 11 common + 3 uncommon + 1 rare. |
-| assembler | Cuts packs consecutively from continuous per-sheet streams, preserving box-level correlation. |
+| `Sheet` | Ordered 11×11 grid of card positions; basic lands are filler and can appear in any slot. |
+| `CollationMethod` | How a sheet is walked into a stream. `striped` implemented; `sequential` planned. |
+| `stripeCycle` | Repeating stripe-width cycle (Alpha `[2,3,4,5]`); collation is deterministic given it. |
+| `PackLayout` | Cards drawn per sheet, in order. Booster: 11C / 3U / 1R. Starter: 45C / 13U / 2R. |
+| `SetDefinition` | `code`, `name`, `sheets`, `layout`, `stripeCycle`; resolved via `getSet(code)` / `sets`. |
 
-Alpha's collation is **deterministic**: each sheet is cut by a striped walk whose stripe widths cycle `2, 3, 4, 5`, starting at position 1 = (col 11, row 11); the pattern realigns bottom-right every 14 sheets. The only randomness is where each sheet's stream **starts**, and that start is **pack-aligned** — commons at multiples of 11, uncommons at multiples of 3, rares anywhere — because pack assembly consumes whole groups. The seeded `Rng` picks only those aligned offsets, so openings are reproducible and Monte-Carlo runs repeatable.
+### Striped collation
+
+Each sheet is cut by a striped walk: start at position 1 = (col 11, row 11);
+take `width` cards up each column; traverse columns right → left; advance the band
+up by `width` when a stripe finishes the leftmost column; wrap top→bottom and
+across sheets. Widths follow the fixed cycle `2, 3, 4, 5`, so the walk is
+deterministic and realigns to position 1 every 14 sheets (1694 cards).
+
+All sheets are phase-locked to one **pack index** `N`: rare = rare-position `N`,
+uncommons = uncommon-positions `3N…3N+2`, commons = common-positions `11N…11N+10`.
+Pack 0 is the first pack of a fresh run; there are 1694 distinct packs. The only
+free choice is `N` — supplied explicitly via `startPack`, or derived from `seed`.
 
 ## Usage
 
 ```ts
-import { lea, openPack, openPacks } from 'crackpack';
+import { getSet, openPack, openPacks } from 'crackpack';
 
-const pack = openPack(lea, { seed: 42 });   // one reproducible pack
-const box = openPacks(lea, 36);              // a correlated 36-pack box (random)
+const lea = getSet('lea');
+const first = openPack(lea, { startPack: 0 }); // the canonical first-ever pack
+const box = openPacks(lea, 36, { seed: 42 });  // 36 correlated packs, reproducible
 ```
 
-Run with Node 22.18+ (no build step — Node strips the types):
+Runs on Node 22.18+ with no build step (native TypeScript type-stripping):
 
 ```sh
 npm test          # sheet + collation tests
-npm run demo 42   # open a pack with an optional seed
+npm run demo 42   # open a pack
 ```
 
-## Data sources & accuracy
+## Demo
 
-Sheet layouts come from [The Collation Project](https://www.lethe.xyz/mtg/collation/) (common sheet) and confirmed observation data (uncommon & rare). Each sheet is checksum-validated against Alpha's known rarity totals (74 / 95 / 116) and basic-land fills.
+`node build-web.mjs` generates a self-contained `web/index.html` that opens
+booster packs, booster boxes (36), starter decks, and starter boxes (10) across
+a set selector (LEA / LEB / 2ED), with card art from Scryfall. The build verifies
+the in-page engine reproduces the library's canonical first pack before writing.
 
-Confirmed:
-- **Collation is deterministic**: stripe widths cycle `2,3,4,5` per stripe from position 1 = (col 11, row 11); the walk reproduces the exact sheet positions read off the physical Alpha sheet and realigns bottom-right on sheet 15. Pack starts are pack-aligned (common ×11, uncommon ×3, rare any).
-- Sheet orientation is row 1 = top, column 1 = left, row-major.
-- Rare sheet largely matches Beta's; the one Alpha difference — Island `lea/288` (Island A) where Beta had Volcanic Island — is already reflected in the data.
-- Alpha never used half-sheet splitting; the engine walks whole 11-row sheets only.
+## Data & validation
 
-Resolved / validated:
-- **Striped walk validated against real pack data.** Six Alpha uncommon pack-opening sequences (from observation notes) each appear as a contiguous run in the constant-width striped walk over the uncommon sheet — confirming both the sheet transcription and the collation algorithm (see `test/collation-observed.test.ts`). One pack matches in reverse because it was filmed upside-down, i.e. pack orientation can flip the observed order.
-- The uncommon sheet's `Mountain (C)` (row 7, col 11) was resolved to **Mountain (B)** = Scryfall `lea/293` (Douglas Shuler). Alpha has exactly two Mountains: cn 292 (A) and 293 (B).
+Sheet layouts come from [The Collation Project](https://www.lethe.xyz/mtg/collation/)
+and observation data. Each sheet is checksum-validated against known rarity totals
+(Alpha: 74 / 95 / 116) and basic-land fills. The striped model is validated against
+real pack-opening sequences (`test/collation-observed.test.ts`) and against known
+sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
+
+- Orientation: row 1 = top, column 1 = left, row-major.
+- Alpha has two basic-land variants (A/B); Beta and Unlimited have three (A/B/C).
+- Beta/Unlimited add `Circle of Protection: Black` (common) and `Volcanic Island` (rare); Alpha replaced the latter with a basic Island.
+- Unlimited reuses Beta's exact sheet layout and collation (only the printed cards differ — white border).
+- No half-sheet splitting; whole 11-row sheets only.

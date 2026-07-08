@@ -1,16 +1,16 @@
 import type { SetDefinition } from '../../types.ts';
 import { buildSheet } from '../parse.ts';
-import sheets from './sheets.json' with { type: 'json' };
+// Unlimited's sheet layouts and collation are identical to Beta's (per The
+// Collation Project), so it reuses Beta's grids. Only the printed cards differ
+// (white border) — a cosmetic detail the collation model doesn't touch.
+import sheets from '../leb/sheets.json' with { type: 'json' };
 
 const data = sheets as unknown as { common: string[][]; uncommon: string[][]; rare: string[][] };
 
-/**
- * Limited Edition Alpha (1993). Striped collation on three 11×11 sheets.
- * Pack: 11 commons + 3 uncommons + 1 rare (common → uncommon → rare).
- */
-export const lea: SetDefinition = {
-  code: 'lea',
-  name: 'Limited Edition Alpha',
+/** Unlimited Edition (1993). White-bordered reprint; same sheets/collation as Beta. */
+export const unlimited: SetDefinition = {
+  code: '2ed',
+  name: 'Unlimited Edition',
   collation: 'striped',
   sheets: {
     common: buildSheet('common', data.common),

@@ -1,5 +1,7 @@
 import type { SetDefinition } from '../types.ts';
 import { lea } from './lea/index.ts';
+import { leb } from './leb/index.ts';
+import { unlimited } from './2ed/index.ts';
 
 /**
  * All known sets, keyed by their lowercase set code (the Scryfall / MTGJSON
@@ -7,7 +9,9 @@ import { lea } from './lea/index.ts';
  * characters, though a few historical ones differ (e.g. Unlimited is `2ed`).
  */
 export const sets: Record<string, SetDefinition> = {
-  lea: lea,
+  lea,
+  leb,
+  '2ed': unlimited,
 };
 
 /** Look up a set by its code (case-insensitive). Throws if the code is unknown. */

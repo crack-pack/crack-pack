@@ -1,0 +1,42 @@
+{
+  "_comment": "Limited Edition Beta (LEB) print sheets, 11x11 (121) each, row-major, from The Collation Project (lethe.xyz). Striped collation, same layout/method as Unlimited (2ED). Differs from Alpha: THREE basic-land variants (A/B/C), Circle of Protection: Black added to the common sheet, and Volcanic Island present on the rare sheet (Alpha replaced it with a basic Island). Rarity totals: 75 common / 95 uncommon / 117 rare.",
+  "common": [
+    ["Swamp (A)", "Howl from Beyond", "Mountain (A)", "Lightning Bolt", "Forest (C)", "Giant Spider", "Plains (C)", "Death Ward", "Unsummon", "Island (C)", "Sea Serpent"],
+    ["Sinkhole", "Swamp (B)", "Frozen Shade", "Swamp (A)", "Mountain (B)", "Shatter", "Hill Giant", "War Mammoth", "Wall of Wood", "Forest (B)", "Giant Growth"],
+    ["Mountain (C)", "Circle of Protection: Black", "Benalish Hero", "Plains (B)", "Island (A)", "Twiddle", "Power Sink", "Fear", "Swamp (C)", "Plague Rats", "Dark Ritual"],
+    ["False Orders", "Mountain (A)", "Red Elemental Blast", "Ironclaw Orcs", "Llanowar Elves", "Scryb Sprites", "Forest (A)", "Plains (B)", "Guardian Angel", "Circle of Protection: Blue", "Plains (C)"],
+    ["Power Leak", "Prodigal Sorcerer", "Island (B)", "Jump", "Unholy Strength", "Drudge Skeletons", "Swamp (A)", "Mountain (B)", "Mons's Goblin Raiders", "Fireball", "Mountain (C)"],
+    ["Tranquility", "Ironroot Treefolk", "Forest (B)", "Wild Growth", "Plains (C)", "Healing Salve", "Circle of Protection: Red", "Invisibility", "Island (B)", "Island (A)", "Creature Bond"],
+    ["Paralyze", "Terror", "Swamp (B)", "Scathe Zombies", "Firebreathing", "Dwarven Warriors", "Mountain (B)", "Forest (A)", "Stream of Life", "Grizzly Bears", "Forest (C)"],
+    ["Holy Armor", "Plains (A)", "Mesa Pegasus", "Circle of Protection: White", "Spell Blast", "Island (B)", "Merfolk of the Pearl Trident", "Swamp (C)", "Pestilence", "Swamp (B)", "Raise Dead"],
+    ["Mountain (C)", "Hurloon Minotaur", "Disintegrate", "Mountain (A)", "Regeneration", "Forest (A)", "Shanodin Dryads", "Pearled Unicorn", "Plains (B)", "Disenchant", "Holy Strength"],
+    ["Island (B)", "Phantasmal Terrain", "Blue Elemental Blast", "Island (A)", "Drain Life", "Swamp (C)", "Weakness", "Earthbind", "Mountain (A)", "Gray Ogre", "Stone Rain"],
+    ["Fog", "Forest (C)", "Craw Wurm", "Forest (B)", "Samite Healer", "Plains (A)", "Circle of Protection: Green", "Island (C)", "Psychic Venom", "Flight", "Island (C)"]
+  ],
+  "uncommon": [
+    ["Swamp (C)", "Nettling Imp", "Demonic Tutor", "Mountain (A)", "Stone Giant", "Orcish Oriflamme", "Rod of Ruin", "Berserk", "Library of Leng", "White Knight", "Black Ward"],
+    ["Control Magic", "Feedback", "Throne of Bone", "Animate Dead", "Wall of Bone", "Swamp (A)", "Deathgrip", "Burrowing", "Living Wall", "Mountain (A)", "Keldon Warlord"],
+    ["Instill Energy", "Thicket Basilisk", "Forest (C)", "Castle", "Ivory Cup", "Plains (B)", "Swords to Plowshares", "Lifetap", "Island (C)", "Steal Artifact", "Counterspell"],
+    ["Swamp (C)", "Sengir Vampire", "Evil Presence", "Earth Elemental", "Mountain (B)", "Iron Star", "Wall of Stone", "Copper Tablet", "Hurricane", "Tsunami", "Forest (B)"],
+    ["Lure", "Obsianus Golem", "White Ward", "Conversion", "Plains (C)", "Icy Manipulator", "Clone", "Animate Artifact", "Swamp (B)", "Bog Wraith", "Simulacrum"],
+    ["Orcish Artillery", "Flashfires", "Basalt Monolith", "Forest (A)", "Wall of Ice", "Ice Storm", "Conservator", "Serra Angel", "Plains (A)", "Consecrate Land", "Sol Ring"],
+    ["Air Elemental", "Island (B)", "Wall of Air", "Swamp (B)", "Gloom", "Scavenging Ghoul", "Sacrifice", "Soul Net", "Wall of Fire", "Fire Elemental", "Mountain (C)"],
+    ["Forest (B)", "Ley Druid", "Regrowth", "Blue Ward", "Jade Statue", "Plains (B)", "Lance", "Water Elemental", "Wall of Water", "Glasses of Urza", "Uthden Troll"],
+    ["Tunnel", "Mountain (C)", "Dragon Whelp", "Wooden Sphere", "Forest (A)", "Lifeforce", "Wanderlust", "Plains (A)", "Celestial Prism", "Wall of Swords", "Resurrection"],
+    ["Red Ward", "Siren's Call", "Phantom Monster", "Black Vise", "Cursed Land", "Black Knight", "Swamp (A)", "Hypnotic Specter", "Dwarven Demolition Team", "Mountain (B)", "Goblin Balloon Brigade"],
+    ["Camouflage", "Channel", "Forest (C)", "Wall of Brambles", "Juggernaut", "Karma", "Plains (C)", "Green Ward", "Crystal Rod", "Phantasmal Forces", "Psionic Blast"]
+  ],
+  "rare": [
+    ["Winter Orb", "Nightmare", "Jade Monolith", "Manabarbs", "Mox Emerald", "Elvish Archers", "Sunglasses of Urza", "Animate Wall", "Tundra", "Sleight of Mind", "Chaos Orb"],
+    ["Lifelace", "Savannah", "Righteousness", "Ancestral Recall", "Black Lotus", "Bad Moon", "Mox Sapphire", "Raging River", "Fungusaur", "Northern Paladin", "Magical Hack"],
+    ["Cockatrice", "Mox Ruby", "Blaze of Glory", "Disrupting Scepter", "Lord of the Pit", "Mana Flare", "Taiga", "Natural Selection", "Crusade", "Mana Short", "Birds of Paradise"],
+    ["Cyclopean Tomb", "Contract from Below", "Badlands", "Granite Gargoyle", "Mox Pearl", "Timber Wolves", "Meekstone", "Savannah Lions", "Vesuvan Doppelganger", "Word of Command", "Forcefield"],
+    ["Chaoslace", "The Hive", "Lord of Atlantis", "Warp Artifact", "Roc of Kher Ridges", "Force of Nature", "Farmstead", "Mahamoti Djinn", "Volcanic Island", "Volcanic Eruption", "Island (B)"],
+    ["Lich", "Zombie Master", "Ankh of Mishra", "Tropical Island", "Deathlace", "Smoke", "Gaea's Liege", "Island (B)", "Balance", "Pirate Ship", "Island Sanctuary"],
+    ["Gauntlet of Might", "Demonic Attorney", "Howling Mine", "Bayou", "Fork", "Goblin King", "Illusionary Mask", "Living Lands", "Personal Incarnation", "Thoughtlace", "Mox Jet"],
+    ["Mana Vault", "Demonic Hordes", "Scrubland", "Earthquake", "Helm of Chatzuk", "Verduran Enchantress", "Purelace", "Kormus Bell", "Copy Artifact", "Clockwork Beast", "Sedge Troll"],
+    ["Jayemdae Tome", "Island (A)", "Nevinyrral's Disk", "Royal Assassin", "Two-Headed Giant of Foriys", "Plateau", "Living Artifact", "Time Vault", "Reverse Damage", "Drain Power", "Island (A)"],
+    ["Will-o'-the-Wisp", "Shivan Dragon", "Kudzu", "Blessing", "Time Walk", "Nether Shadow", "Rock Hydra", "Fastbond", "Veteran Bodyguard", "Braingeyser", "Stasis"],
+    ["Mind Twist", "Power Surge", "Web", "Wrath of God", "Underground Sea", "Dingus Egg", "Darkpact", "Wheel of Fortune", "Aspect of Wolf", "Armageddon", "Timetwister"]
+  ]
+}
