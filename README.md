@@ -65,14 +65,6 @@ npm test          # sheet + collation tests
 npm run demo 42   # open a pack
 ```
 
-## Demo
-
-A self-contained web pack opener — booster packs, booster boxes (36), starter
-decks, and starter boxes (10) across a set selector (LEA / LEB / 2ED), with card
-art from Scryfall — lives in its own repo,
-[**crack-pack-demo**](https://github.com/crack-pack/crack-pack-demo), and is
-deployed at <https://crack-pack.netlify.app/>.
-
 ## Data & validation
 
 Sheet layouts come from [The Collation Project](https://www.lethe.xyz/mtg/collation/)
