@@ -74,6 +74,12 @@ that is unconfirmed.
 - 🔴 **Collation simplified.** The Dark's real collation is *variable per box*: sheets may or may not split (common as top-5 / bottom-6), boxes carry "2 or 3 independent sequences of commons," and non-split boxes show width-7 stripes — so there is no single deterministic walk to reproduce. We model it as a plain two-sheet striped set with an assumed `[2,3,4,5]` cycle (Steven's call). The card grids are validated; the pack grouping is a deliberate approximation of an inherently non-deterministic process, not a provisional value awaiting one "correct" answer.
 - 🟡 The "Runesword" printing variant (an errant line in the text box) is not modelled; its distribution is unknown.
 
+### `fem` — Fallen Empires (1994)
+- ✅ Grids (2 × 11×11, **no rare**): common merges to 36 base cards (15×C4 + 20×C3 + Delif's Cone ×1); uncommon 25×U3 + 5×U2 + 36×U1 (the 36 U1s are the de-facto rares).
+- ✅ Multi-art commons: a common has a distinct artwork for each of its appearances (C4 → four, C3 → three), notated `(A)`–`(D)`; each art variant occupies one slot; kept verbatim. Uncommons are single-art.
+- ✅ Pack: 8 cards = 6 commons + 2 uncommons; 60-pack boxes.
+- 🔴 **Collation simplified.** Like The Dark, the uncommon sheet may or may not be split depending on the box, so there is no single deterministic walk. Modelled as a plain two-sheet striped set with an assumed `[2,3,4,5]` cycle (a deliberate approximation, not a value awaiting one "correct" answer).
+
 ---
 
 ## Open validation tasks

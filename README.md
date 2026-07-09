@@ -16,6 +16,7 @@ so a pack is a correlated run of cards and a box is not N independent packs.
 | `atq` | Antiquities (1994) | striped, two 11×11 sheets (no rare); stripe widths provisional (assumed = ARN, pending validation) |
 | `leg` | Legends (1994) | striped, three 11×11 sheets; uncommon sheet is **half-split** (a box draws from one half — pass `half: 'A' \| 'B'`); collation provisional |
 | `drk` | The Dark (1994) | striped, two 11×11 sheets (no rare); collation simplified (real one is variable per box) |
+| `fem` | Fallen Empires (1994) | striped, two 11×11 sheets (no rare); multi-art commons `(A)`–`(D)`; collation simplified |
 
 ## Core model
 
@@ -88,5 +89,6 @@ sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
 - Antiquities is like Arabian Nights: no rare sheet, rarity by repeat count (common: 11×C1 + 5×C2 + 25×C4; uncommon: 26×U1 + 4×U2 + 29×U3, both checksum-validated). Five non-basic lands (Urza's Mine/Power Plant/Tower, Mishra's Factory, Strip Mine) have four art variants each, notated `(A)`–`(D)`. **Stripe widths are provisional** — the sheet grids are validated, but the stripe order (which cards pack together) is assumed equal to Arabian Nights pending validation against a box-opening video.
 - Legends has three sheets (common 75, uncommon 114, rare 121 — checksum-validated). Its uncommon sheet is collated as two half-sheets — top 6 rows ("A", incl. Mana Drain) and bottom 5 rows ("B", incl. Karakas) — and a whole box draws uncommons from one half; pass `openPacks(leg, n, { half: 'A' | 'B' })`. **Provisional**: stripe widths assumed `[2,3,4,5]`, and the half split assumed row-major top-6/bottom-5 (doesn't perfectly reproduce the source's "only Hammerheim on both halves"), pending validation against box openings.
 - The Dark is like Arabian Nights/Antiquities: no rare sheet, rarity by repeat count (common: 40×C3 + Maze of Ith ×1; uncommon: 43×U2 + 35×U1, both checksum-validated). Its real collation is **variable per box** (sheets may or may not split, with 2–3 independent common sequences, or width-7 stripes when unsplit), so it can't be reproduced deterministically — we model it as a plain two-sheet striped set with an assumed `[2,3,4,5]` cycle. The grids are validated; the pack grouping is a deliberate simplification.
+- Fallen Empires: no rare sheet (common: 15×C4 + 20×C3 + Delif's Cone ×1; uncommon: 25×U3 + 5×U2 + 36×U1, checksum-validated). Its commons are **multi-art** — a common has a distinct artwork for each time it appears (C4 → four, C3 → three), notated `(A)`–`(D)`. Like The Dark, the uncommon sheet may or may not split per box, so collation is simplified to a plain two-sheet striped model with an assumed `[2,3,4,5]` cycle.
 
 See [ASSUMPTIONS.md](./ASSUMPTIONS.md) for the full list of modelling assumptions and their validation status.
