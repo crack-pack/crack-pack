@@ -68,6 +68,12 @@ that is unconfirmed.
 - 🔴 **Stripe cycle** `[2,3,4,5]` on all three sheets: **provisional** — Steven's assumption; the source gives no width sequence (it notes uncommon widths are "only 2 to 4").
 - 🟡 Pack ordering (rare-uncommon-common vs uncommon-rare-common): not modelled; a single canonical order is emitted.
 
+### `drk` — The Dark (1994)
+- ✅ Grids (2 × 11×11, **no rare**): common 40×C3 + Maze of Ith ×1; uncommon 43×U2 + 35×U1 (the 35 U1s are the de-facto rares).
+- ✅ Pack: 8 cards = 6 commons + 2 uncommons; 60-pack boxes.
+- 🔴 **Collation simplified.** The Dark's real collation is *variable per box*: sheets may or may not split (common as top-5 / bottom-6), boxes carry "2 or 3 independent sequences of commons," and non-split boxes show width-7 stripes — so there is no single deterministic walk to reproduce. We model it as a plain two-sheet striped set with an assumed `[2,3,4,5]` cycle (Steven's call). The card grids are validated; the pack grouping is a deliberate approximation of an inherently non-deterministic process, not a provisional value awaiting one "correct" answer.
+- 🟡 The "Runesword" printing variant (an errant line in the text box) is not modelled; its distribution is unknown.
+
 ---
 
 ## Open validation tasks

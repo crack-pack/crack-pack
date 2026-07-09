@@ -26,4 +26,5 @@ export { unlimited } from './sets/2ed/index.ts';
 export { arn } from './sets/arn/index.ts';
 export { atq } from './sets/atq/index.ts';
 export { leg } from './sets/leg/index.ts';
+export { drk } from './sets/drk/index.ts';
 export { sets, getSet } from './sets/index.ts';
