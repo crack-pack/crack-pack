@@ -48,6 +48,12 @@ that is unconfirmed.
 - ✅ Reuses Beta's exact sheet layout and collation (the source states they are identical; only the printed faces differ — white border).
 - 🟡 Stripe cycle `[2,3,4,5]`: assumed (inherited from Beta).
 
+### `3ed` — Revised Edition (1994)
+- ✅ Grids (3 × 11×11): non-land totals 75 / 95 / 121; three basic-land variants A/B/C. Basic lands fill the common (46) and uncommon (26) sheets; the rare sheet has none — the Beta rare-Islands were removed, leaving Islands slightly short-printed (uncommon Islands = 2 vs 6 of the others).
+- ✅ Products: 15-card booster (11/3/1), 36-pack boxes; 60-card starters. (The source notes two starter variants — a 2-rare 45/13/2 and a 3-rare 45/12/3; only the standard 2-rare starter is modelled in the demo.)
+- 🟡 Stripe cycle `[2,3,4,5]`: assumed, as for the other base sets (the source gives no explicit cycle). Layout is "very similar to Beta and Unlimited."
+- 🟡 Pack ordering ("back-facing, uncommon-rare-common") not modelled; canonical slot order emitted.
+
 ### `arn` — Arabian Nights (1993)
 - ✅ Grids (2 × 11×11, **no rare**): common 16×C4 + 9×C5 + Desert×11 + Mountain×1; uncommon 33×U2 + 17×U3 + Oasis×4.
 - 🟡 **Stripe cycles** common `[3,4,5]` / uncommon `[3,4]`: a deliberate modelling choice. The source describes the widths as "all width 3 and 4 except for one case of a width 5 stripe on the common sheet" — not a clean repeating cycle — so these cycles are an approximation (Steven's call), not the exact observed sequence.

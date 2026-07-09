@@ -7,6 +7,7 @@ import { atq } from './atq/index.ts';
 import { leg } from './leg/index.ts';
 import { drk } from './drk/index.ts';
 import { fem } from './fem/index.ts';
+import { revised } from './3ed/index.ts';
 
 /**
  * All known sets, keyed by their lowercase set code (the Scryfall / MTGJSON
@@ -19,6 +20,7 @@ export const sets: Record<string, SetDefinition> = {
   '2ed': unlimited,
   arn,
   atq,
+  '3ed': revised,
   leg,
   drk,
   fem,

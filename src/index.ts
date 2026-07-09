@@ -28,4 +28,5 @@ export { atq } from './sets/atq/index.ts';
 export { leg } from './sets/leg/index.ts';
 export { drk } from './sets/drk/index.ts';
 export { fem } from './sets/fem/index.ts';
+export { revised } from './sets/3ed/index.ts';
 export { sets, getSet } from './sets/index.ts';

@@ -12,6 +12,7 @@ so a pack is a correlated run of cards and a box is not N independent packs.
 | `lea` | Limited Edition Alpha (1993) | striped, three 11×11 sheets |
 | `leb` | Limited Edition Beta (1993) | striped, three 11×11 sheets |
 | `2ed` | Unlimited Edition (1993) | striped; reuses Beta's sheet layout |
+| `3ed` | Revised Edition (1994) | striped, three 11×11 sheets; layout similar to Beta/Unlimited |
 | `arn` | Arabian Nights (1993) | striped, two 11×11 sheets (no rare); per-sheet width cycles |
 | `atq` | Antiquities (1994) | striped, two 11×11 sheets (no rare); stripe widths provisional (assumed = ARN, pending validation) |
 | `leg` | Legends (1994) | striped, three 11×11 sheets; uncommon sheet is **half-split** (a box draws from one half — pass `half: 'A' \| 'B'`); collation provisional |
@@ -84,6 +85,7 @@ sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
 - Alpha has two basic-land variants (A/B); Beta and Unlimited have three (A/B/C).
 - Beta/Unlimited add `Circle of Protection: Black` (common) and `Volcanic Island` (rare); Alpha replaced the latter with a basic Island.
 - Unlimited reuses Beta's exact sheet layout and collation (only the printed cards differ — white border).
+- Revised (3ed) is a base-set reprint with a Beta/Unlimited-like layout (non-land totals 75 / 95 / 121; three basic-land variants A/B/C). Basic lands fill both the common and uncommon sheets; the rare sheet has none (the Beta rare-Islands were removed, so Islands are slightly short-printed). Stripe cycle assumed `[2,3,4,5]` (no explicit cycle in the source).
 - No half-sheet splitting; whole 11-row sheets only.
 - Arabian Nights has no rare sheet — rarity is emergent from how often a card repeats (common: 16×4 + 9×5 + Desert ×11 + Mountain ×1; uncommon: 33×2 + 17×3 + Oasis ×4, both checksum-validated). 15 common cards have "light"/"dark" versions (the earlier bottom-right 6×6 quadrant), kept verbatim in the sheet data. The two sheets stripe with different width cycles, giving 1694 distinct packs.
 - Antiquities is like Arabian Nights: no rare sheet, rarity by repeat count (common: 11×C1 + 5×C2 + 25×C4; uncommon: 26×U1 + 4×U2 + 29×U3, both checksum-validated). Five non-basic lands (Urza's Mine/Power Plant/Tower, Mishra's Factory, Strip Mine) have four art variants each, notated `(A)`–`(D)`. **Stripe widths are provisional** — the sheet grids are validated, but the stripe order (which cards pack together) is assumed equal to Arabian Nights pending validation against a box-opening video.
