@@ -86,11 +86,18 @@ that is unconfirmed.
 - ✅ Pack: 8 cards = 6 commons + 2 uncommons; 60-pack boxes.
 - 🔴 **Collation simplified.** Like The Dark, the uncommon sheet may or may not be split depending on the box, so there is no single deterministic walk. Modelled as a plain two-sheet striped set with an assumed `[2,3,4,5]` cycle (a deliberate approximation, not a value awaiting one "correct" answer).
 
+### `ice` — Ice Age (1995)
+- ✅ Grids for **common and uncommon** (2 × 11×11, 121 distinct each). Basic/snow-covered lands are on a separate land sheet and don't appear in boosters, so these are pure card grids. Common uses "version 1" (the source shows two common-sheet printings with the same 121 cards in different layouts).
+- 🔴 **Rare sheet is FABRICATED.** The Collation Project page has no rare-sheet gallery, so the rare grid is the 121 real Ice Age rares in **Scryfall collector-number order**, not the true print-sheet order. Ice Age **rare collation is not accurate** — it is an explicit placeholder until the real rare sheet is sourced. Pack composition and the common/uncommon collation are unaffected.
+- 🔴 **Stripe cycle** `[2,3,4,5]` assumed; the source notes variable collation (some boxes split the first common sheet top-5/bottom-6; width-1 stripes observed).
+- 🟡 Two common-sheet printings exist; only version 1 is modelled.
+
 ---
 
 ## Open validation tasks
 
 - **`atq` stripe widths** — determine the real per-sheet width sequence from a box-opening video, then update `src/sets/atq/index.ts`.
 - **`leg` uncommon split + stripe widths** — determine the true grid orientation / half boundary and stripe widths from three box openings, then update `src/sets/leg/index.ts` (and the demo).
+- **`ice` rare sheet** — source the real Ice Age rare sheet (the Collation Project page lacks it) and replace the fabricated placeholder grid in `src/sets/ice/sheets.json`.
 
 When a provisional item is validated, correct the set definition, flip its status here, and cut a release.
