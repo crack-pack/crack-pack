@@ -9,6 +9,7 @@ import { drk } from './drk/index.ts';
 import { fem } from './fem/index.ts';
 import { revised } from './3ed/index.ts';
 import { ice } from './ice/index.ts';
+import { mir } from './mir/index.ts';
 
 /**
  * All known sets, keyed by their lowercase set code (the Scryfall / MTGJSON
@@ -26,6 +27,7 @@ export const sets: Record<string, SetDefinition> = {
   drk,
   fem,
   ice,
+  mir,
 };
 
 /** Look up a set by its code (case-insensitive). Throws if the code is unknown. */

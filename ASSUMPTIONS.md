@@ -92,6 +92,12 @@ that is unconfirmed.
 - 🔴 **Stripe cycle** `[2,3,4,5]` assumed; the source notes variable collation (some boxes split the first common sheet top-5/bottom-6; width-1 stripes observed).
 - 🟡 Two common-sheet printings exist; only version 1 is modelled.
 
+### `mir` — Mirage (1996)
+- ✅ Grids (3 × 10×11, 110 distinct each): common, uncommon, and rare are all real sheet data. Basic lands (four art variations) are not in boosters, so these are pure card grids.
+- 🟡 **Belgian printing modelled.** Mirage had two printings — US (*sequential*, four common runs with variable splits) and Belgian (*striped*). We model the Belgian striped one; the engine doesn't implement sequential collation. Common + uncommon are the Belgian sheets; the rare grid is the single rare sheet the source shows (listed under the US section) — real 110-rare data.
+- 🔴 **Sheet orientation assumed.** 10×11 sheets are non-square, so the striped walk depends on which dimension is rows vs columns; the source doesn't pin it down. We assume **10 rows × 11 columns** (gallery read row-major).
+- 🔴 **Stripe cycle** `[2,3,4,5]` assumed (source gives no cycle). Period = 770 packs.
+
 ---
 
 ## Open validation tasks
