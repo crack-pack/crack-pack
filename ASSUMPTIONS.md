@@ -6,6 +6,11 @@ the source's own checksums); some is a reasonable modelling choice; and some is 
 deliberate placeholder awaiting validation. This file tracks all of it so nothing
 provisional is mistaken for confirmed.
 
+**Can you help close a gap?** If you have specialist knowledge of MtG print-sheet
+collation, or images/data for any sheet or collation pattern marked 🟡 or 🔴
+below, please [open an issue or PR](https://github.com/crack-pack/crack-pack/issues).
+See the project's "Help wanted" section for what's most needed.
+
 **Status legend**
 
 - ✅ **Validated** — checked against real pack openings, physical sheet replicas, or the source's stated checksums.

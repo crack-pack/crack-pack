@@ -1,9 +1,17 @@
 # crack-pack
 
 A dependency-free TypeScript library that simulates Magic: The Gathering pack
-openings by modelling physical **print-sheet collation** rather than flat rarity
-odds. Cards are cut from ordered print sheets in a deterministic striped pattern,
-so a pack is a correlated run of cards and a box is not N independent packs.
+openings **as realistically as the available print-sheet data allows** — by
+modelling the physical **print-sheet collation** process rather than flat rarity
+odds. Cards are cut from ordered print sheets in a deterministic walk, so a pack
+is a correlated run of cards and a box is not N independent packs.
+
+> **How realistic?** Only as realistic as the underlying data. For some sets the
+> sheets and collation are validated against real openings; for others the sheet
+> data is solid but the collation is assumed, simplified, or (in one case) the
+> sheet itself is a placeholder. Every such gap is documented, per set, in
+> **[ASSUMPTIONS.md](./ASSUMPTIONS.md)** — read it before trusting any given
+> set's output. **Help closing these gaps is very welcome — see [Help wanted](#help-wanted).**
 
 ## Sets
 
@@ -87,6 +95,22 @@ sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
 - The Dark is like Arabian Nights/Antiquities: no rare sheet, rarity by repeat count (common: 40×C3 + Maze of Ith ×1; uncommon: 43×U2 + 35×U1, both checksum-validated). Its real collation is **variable per box** (sheets may or may not split, with 2–3 independent common sequences, or width-7 stripes when unsplit), so it can't be reproduced deterministically — we model it as a plain two-sheet striped set with an assumed `[2,3,4,5]` cycle. The grids are validated; the pack grouping is a deliberate simplification.
 - Fallen Empires: no rare sheet (common: 15×C4 + 20×C3 + Delif's Cone ×1; uncommon: 25×U3 + 5×U2 + 36×U1, checksum-validated). Its commons are **multi-art** — a common has a distinct artwork for each time it appears (C4 → four, C3 → three), notated `(A)`–`(D)`. Like The Dark, the uncommon sheet may or may not split per box, so collation is simplified to a plain two-sheet striped model with an assumed `[2,3,4,5]` cycle.
 - Ice Age (121 commons / 121 uncommons / 121 rares) has **real** common and uncommon sheets, but its **rare sheet is a placeholder**: the Collation Project page has no rare-sheet gallery, so the rare grid is the 121 real rares in Scryfall collector order — **not** the true print-sheet order. Ice Age rare collation is therefore not accurate; it's a stand-in until the real rare sheet is sourced. Basic/snow-covered lands are on a separate land sheet and don't appear in boosters. Common uses "version 1" of two printings; stripe cycle `[2,3,4,5]` assumed.
-- Mirage (110 commons / 110 uncommons / 110 rares, all real grids) had two printings — a US *sequential* one (four common runs) and a Belgian *striped* one. We model the **Belgian striped** printing (the engine doesn't do sequential). Sheets are **10×11** (non-square), so the walk depends on row/column orientation, which the source doesn't pin down — we assume 10 rows × 11 columns. Stripe cycle `[2,3,4,5]` assumed. Basic lands (four variations) aren't in boosters.
+- Mirage (110 commons / 110 uncommons / 110 rares, all real grids) had two printings — a US *sequential* one (four common runs) and a Belgian *striped* one. We model the **Belgian striped** printing; the engine now supports sequential collation, but the US printing's multi-run, probabilistic-split assembly isn't modelled yet. Sheets are **10×11** (non-square), so the walk depends on row/column orientation, which the source doesn't pin down — we assume 10 rows × 11 columns. Stripe cycle `[2,3,4,5]` assumed. Basic lands (four variations) aren't in boosters.
 
 See [ASSUMPTIONS.md](./ASSUMPTIONS.md) for the full list of modelling assumptions and their validation status.
+
+## Help wanted
+
+**This project is only as accurate as the print-sheet data behind it — and there
+are gaps.** If you have specialist knowledge of Magic's print-sheet collation, or
+images/data for print sheets or collation patterns we're missing or only
+approximating, please **[open an issue or PR](https://github.com/crack-pack/crack-pack/issues)**.
+
+Particularly wanted (see [ASSUMPTIONS.md](./ASSUMPTIONS.md) for details):
+
+- **Missing sheets** — e.g. the **Ice Age rare sheet** (currently a placeholder), and any set's sheets not yet on [The Collation Project](https://www.lethe.xyz/mtg/collation/).
+- **Stripe-width sequences** — the real per-sheet widths for **Antiquities**, **Legends**, **The Dark**, **Fallen Empires**, **Mirage** (currently assumed).
+- **Collation specifics** — e.g. the **Legends** uncommon half-split orientation, and the **Mirage US** sequential multi-run splits.
+- **Anything** — corrections, box-opening footage, or physical-sheet scans that can validate or refine a set.
+
+Contributions and expertise are hugely appreciated — the goal is to make this as realistic as the community's collective knowledge allows.
