@@ -45,7 +45,7 @@ assumption made, and how you could help. See the per-set sections below for more
 | `leg` — Legends (1994) | rare 11×11 · uncommon 11×11 (half-split: top-6 "A" / bottom-5 "B") · common 11×11 | striped — all sheets `[2,3,4,5]`; **uncommon** drawn from one half-sheet per box (`half: 'A'\|'B'`) | ✅ validated | [🔴 provisional](docs/leg.md) (widths + split orientation) |
 | `drk` — The Dark (1994) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — all sheets `[2,3,4,5]` | ✅ validated | [🔴 simplified](docs/drk.md) (real collation varies per box) |
 | `fem` — Fallen Empires (1994) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — all sheets `[2,3,4,5]` | ✅ validated | [🔴 simplified](docs/fem.md) (uncommon split varies per box) |
-| `ice` — Ice Age (1995) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | [🔴 **rare sheet = placeholder**](docs/ice.md) (common/uncommon ✅) | [🔴 provisional](docs/ice.md) |
+| `ice` — Ice Age (1995) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | ✅ validated (rare [hand-transcribed](docs/ice.md)) | [🔴 provisional](docs/ice.md) |
 | `mir` — Mirage (1996) | rare 10×11 · uncommon 10×11 · common 10×11 | striped — all sheets `[2,3,4,5]` (Belgian printing; **10×11 orientation assumed**) | ✅ validated (Belgian) | [🔴 provisional](docs/mir.md) |
 
 ---
@@ -124,7 +124,7 @@ assumption made, and how you could help. See the per-set sections below for more
 
 ### `ice` — Ice Age (1995)
 - ✅ Grids for **common and uncommon** (2 × 11×11, 121 distinct each). Basic/snow-covered lands are on a separate land sheet and don't appear in boosters, so these are pure card grids. Common uses "version 1" (the source shows two common-sheet printings with the same 121 cards in different layouts).
-- 🔴 **Rare sheet is FABRICATED.** The Collation Project page has no rare-sheet gallery, so the rare grid is the 121 real Ice Age rares in a **randomised (seeded shuffle) order**, persisted to `sheets.json` — not the true print-sheet order. Ice Age **rare collation is not accurate** — it is an explicit placeholder until the real rare sheet is sourced. (Ice Age has no predecessor base set to base a reconstruction on, unlike 4th Edition.) Pack composition and the common/uncommon collation are unaffected.
+- ✅ **Rare sheet is real, hand-transcribed.** The Collation Project page has no rare-sheet gallery, so the 11×11 rare grid was transcribed by hand from a photo of the uncut rare sheet on [magiclibrarities.net](https://www.magiclibrarities.net/). It was validated programmatically (all 121 real Ice Age rares present exactly once, no duplicates/omissions), and positions were eyeballed against the sheet photo. This replaced the earlier randomised placeholder. **Caveat:** individual card *positions* rest on a manual read of a photograph — the card set is certain, but a small number of positions could be off by a cell; corrections against a clearer scan are welcome.
 - 🔴 **Stripe cycle** `[2,3,4,5]` assumed; the source notes variable collation (some boxes split the first common sheet top-5/bottom-6; width-1 stripes observed).
 - 🟡 Two common-sheet printings exist; only version 1 is modelled.
 
@@ -140,6 +140,6 @@ assumption made, and how you could help. See the per-set sections below for more
 
 - **`atq` stripe widths** — determine the real per-sheet width sequence from a box-opening video, then update `src/sets/atq/index.ts`.
 - **`leg` uncommon split + stripe widths** — determine the true grid orientation / half boundary and stripe widths from three box openings, then update `src/sets/leg/index.ts` (and the demo).
-- **`ice` rare sheet** — source the real Ice Age rare sheet (the Collation Project page lacks it) and replace the fabricated placeholder grid in `src/sets/ice/sheets.json`.
+- **`ice` rare positions** — the rare grid is hand-transcribed from an uncut-sheet photo (the Collation Project page lacks it); the card set is verified but individual positions could use confirmation against a clearer scan or box-opening data.
 
 When a provisional item is validated, correct the set definition, flip its status here, and cut a release.

@@ -10,15 +10,16 @@ const data = sheets as unknown as { common: string[][]; uncommon: string[][]; ra
  * 36-pack boxes. Basic lands (incl. snow-covered) are on a separate land sheet
  * and do NOT appear in boosters, so these three sheets are pure card grids.
  *
- * ⚠️ PLACEHOLDER RARE SHEET. The Collation Project page has galleries for the
- * common and uncommon sheets but NOT the rare sheet, so the rare grid here is
- * FABRICATED: the 121 real rares in a randomised (seeded shuffle) order, not the
- * true print-sheet order. Rare collation for Ice Age is therefore NOT accurate —
- * it is a stand-in until the real rare sheet is sourced. Commons and uncommons
- * are the real sheet data (common uses "version 1", the earlier of two printings
- * the source shows). Stripe cycle [2,3,4,5] assumed; the source notes variable
- * collation (some boxes split the first common sheet, width-1 stripes observed).
- * Source: The Collation Project (lethe.xyz/mtg/collation/ice).
+ * All three sheets are REAL print-sheet data. The Collation Project page has no
+ * rare-sheet gallery, so the rare grid was transcribed by hand from a photo of
+ * the uncut rare sheet on magiclibrarities.net and validated (all 121 rares
+ * present exactly once, positions eyeballed against the image). Commons and
+ * uncommons come from The Collation Project (common uses "version 1", the earlier
+ * of two printings the source shows). Stripe cycle [2,3,4,5] assumed; the source
+ * notes variable collation (some boxes split the first common sheet, width-1
+ * stripes observed).
+ * Sources: The Collation Project (lethe.xyz/mtg/collation/ice) for common/uncommon;
+ * magiclibrarities.net uncut-sheet photo for the rare sheet.
  */
 export const ice: SetDefinition = {
   code: 'ice',
