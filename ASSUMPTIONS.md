@@ -24,6 +24,30 @@ that is unconfirmed.
 
 ---
 
+## Status matrix
+
+At-a-glance status per set. **Sheet data** = are the print sheets themselves real
+(vs a placeholder); **Collation** = is the walk/stripe pattern validated,
+assumed, or simplified. Per-sheet detail is given where sheets or stripe patterns
+differ between rarities, or where a sheet is split. See the per-set sections
+below for the full story.
+
+| Set (year) | Sheets | Collation | Sheet data | Collation |
+|---|---|---|---|---|
+| `lea` — Alpha (1993) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | ✅ validated | ✅ validated |
+| `leb` — Beta (1993) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | ✅ validated | 🟡 assumed (cycle as Alpha) |
+| `2ed` — Unlimited (1993) | rare 11×11 · uncommon 11×11 · common 11×11 (Beta layout) | striped — all sheets `[2,3,4,5]` | ✅ validated (reuses Beta) | 🟡 assumed |
+| `3ed` — Revised (1994) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | ✅ validated | 🟡 assumed |
+| `arn` — Arabian Nights (1993) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — common `[3,4,5]`, uncommon `[3,4]` | ✅ validated | 🟡 modelled approximation |
+| `atq` — Antiquities (1994) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — common `[3,4,5]`, uncommon `[3,4]` | ✅ validated | 🔴 provisional (assumed = ARN) |
+| `leg` — Legends (1994) | rare 11×11 · uncommon 11×11 (half-split: top-6 "A" / bottom-5 "B") · common 11×11 | striped — all sheets `[2,3,4,5]`; **uncommon** drawn from one half-sheet per box (`half: 'A'\|'B'`) | ✅ validated | 🔴 provisional (widths + split orientation) |
+| `drk` — The Dark (1994) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — all sheets `[2,3,4,5]` | ✅ validated | 🔴 simplified (real collation varies per box) |
+| `fem` — Fallen Empires (1994) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — all sheets `[2,3,4,5]` | ✅ validated | 🔴 simplified (uncommon split varies per box) |
+| `ice` — Ice Age (1995) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | 🔴 **rare sheet = placeholder** (common/uncommon ✅) | 🔴 provisional |
+| `mir` — Mirage (1996) | rare 10×11 · uncommon 10×11 · common 10×11 | striped — all sheets `[2,3,4,5]` (Belgian printing; **10×11 orientation assumed**) | ✅ validated (Belgian) | 🔴 provisional |
+
+---
+
 ## Engine-wide
 
 | Assumption | Status | Notes |

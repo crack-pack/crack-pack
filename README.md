@@ -15,19 +15,24 @@ is a correlated run of cards and a box is not N independent packs.
 
 ## Sets
 
-| Code | Set | Collation |
-| --- | --- | --- |
-| `lea` | Limited Edition Alpha (1993) | striped, three 11×11 sheets |
-| `leb` | Limited Edition Beta (1993) | striped, three 11×11 sheets |
-| `2ed` | Unlimited Edition (1993) | striped; reuses Beta's sheet layout |
-| `3ed` | Revised Edition (1994) | striped, three 11×11 sheets; layout similar to Beta/Unlimited |
-| `arn` | Arabian Nights (1993) | striped, two 11×11 sheets (no rare); per-sheet width cycles |
-| `atq` | Antiquities (1994) | striped, two 11×11 sheets (no rare); stripe widths provisional (assumed = ARN, pending validation) |
-| `leg` | Legends (1994) | striped, three 11×11 sheets; uncommon sheet is **half-split** (a box draws from one half — pass `half: 'A' \| 'B'`); collation provisional |
-| `drk` | The Dark (1994) | striped, two 11×11 sheets (no rare); collation simplified (real one is variable per box) |
-| `fem` | Fallen Empires (1994) | striped, two 11×11 sheets (no rare); multi-art commons `(A)`–`(D)`; collation simplified |
-| `ice` | Ice Age (1995) | striped, three 11×11 sheets; **rare sheet is a placeholder** (real common/uncommon; rare order fabricated pending data) |
-| `mir` | Mirage (1996) | striped, three 10×11 sheets (Belgian printing; real grids); orientation + cycle provisional |
+Eleven sets, from Alpha (1993) through Mirage (1996). For each set's exact
+per-sheet structure and how confident we are in its collation (validated /
+assumed / simplified / placeholder), see the **[status matrix in
+ASSUMPTIONS.md](./ASSUMPTIONS.md#status-matrix)**.
+
+| Code | Set |
+| --- | --- |
+| `lea` | Limited Edition Alpha (1993) |
+| `leb` | Limited Edition Beta (1993) |
+| `2ed` | Unlimited Edition (1993) |
+| `3ed` | Revised Edition (1994) |
+| `arn` | Arabian Nights (1993) |
+| `atq` | Antiquities (1994) |
+| `leg` | Legends (1994) |
+| `drk` | The Dark (1994) |
+| `fem` | Fallen Empires (1994) |
+| `ice` | Ice Age (1995) |
+| `mir` | Mirage (1996) |
 
 ## Core model
 
