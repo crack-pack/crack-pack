@@ -39,6 +39,7 @@ assumption made, and how you could help. See the per-set sections below for more
 | `leb` — Beta (1993) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | ✅ validated | 🟡 assumed (cycle as Alpha) |
 | `2ed` — Unlimited (1993) | rare 11×11 · uncommon 11×11 · common 11×11 (Beta layout) | striped — all sheets `[2,3,4,5]` | ✅ validated (reuses Beta) | 🟡 assumed |
 | `3ed` — Revised (1994) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | ✅ validated | 🟡 assumed |
+| `4ed` — Fourth Edition (1995) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | 🟡 [rare reconstructed from Revised](docs/4ed.md) (common/uncommon ✅) | 🟡 assumed |
 | `arn` — Arabian Nights (1993) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — common `[3,4,5]`, uncommon `[3,4]` | ✅ validated | 🟡 modelled approximation |
 | `atq` — Antiquities (1994) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — common `[3,4,5]`, uncommon `[3,4]` | ✅ validated | [🔴 provisional](docs/atq.md) (assumed = ARN) |
 | `leg` — Legends (1994) | rare 11×11 · uncommon 11×11 (half-split: top-6 "A" / bottom-5 "B") · common 11×11 | striped — all sheets `[2,3,4,5]`; **uncommon** drawn from one half-sheet per box (`half: 'A'\|'B'`) | ✅ validated | [🔴 provisional](docs/leg.md) (widths + split orientation) |
@@ -84,6 +85,11 @@ assumption made, and how you could help. See the per-set sections below for more
 - 🟡 Stripe cycle `[2,3,4,5]`: assumed, as for the other base sets (the source gives no explicit cycle). Layout is "very similar to Beta and Unlimited."
 - 🟡 Pack ordering ("back-facing, uncommon-rare-common") not modelled; canonical slot order emitted.
 
+### `4ed` — Fourth Edition (1995)
+- ✅ Common and uncommon grids are real (121 distinct each; common uses "version 1" of two shown printings). Basic lands (three A/B/C variants) are on a separate land sheet and don't appear in boosters, so these are pure card grids.
+- 🟡 **Rare sheet reconstructed from Revised.** The source has no transcribed rare sheet (only French/Portuguese sheet images). 4th Edition evolved from Revised, so the rare grid is the **real Revised rare sheet** with the 31 removed rares' slots filled by the 31 new-to-4ed rares; the 90 carried-over rares keep their Revised positions. Plausible but unverified — see [docs/4ed.md](docs/4ed.md).
+- 🟡 Stripe cycle `[2,3,4,5]` assumed.
+
 ### `arn` — Arabian Nights (1993)
 - ✅ Grids (2 × 11×11, **no rare**): common 16×C4 + 9×C5 + Desert×11 + Mountain×1; uncommon 33×U2 + 17×U3 + Oasis×4.
 - 🟡 **Stripe cycles** common `[3,4,5]` / uncommon `[3,4]`: a deliberate modelling choice. The source describes the widths as "all width 3 and 4 except for one case of a width 5 stripe on the common sheet" — not a clean repeating cycle — so these cycles are an approximation (Steven's call), not the exact observed sequence.
@@ -118,7 +124,7 @@ assumption made, and how you could help. See the per-set sections below for more
 
 ### `ice` — Ice Age (1995)
 - ✅ Grids for **common and uncommon** (2 × 11×11, 121 distinct each). Basic/snow-covered lands are on a separate land sheet and don't appear in boosters, so these are pure card grids. Common uses "version 1" (the source shows two common-sheet printings with the same 121 cards in different layouts).
-- 🔴 **Rare sheet is FABRICATED.** The Collation Project page has no rare-sheet gallery, so the rare grid is the 121 real Ice Age rares in **Scryfall collector-number order**, not the true print-sheet order. Ice Age **rare collation is not accurate** — it is an explicit placeholder until the real rare sheet is sourced. Pack composition and the common/uncommon collation are unaffected.
+- 🔴 **Rare sheet is FABRICATED.** The Collation Project page has no rare-sheet gallery, so the rare grid is the 121 real Ice Age rares in a **randomised (seeded shuffle) order**, persisted to `sheets.json` — not the true print-sheet order. Ice Age **rare collation is not accurate** — it is an explicit placeholder until the real rare sheet is sourced. (Ice Age has no predecessor base set to base a reconstruction on, unlike 4th Edition.) Pack composition and the common/uncommon collation are unaffected.
 - 🔴 **Stripe cycle** `[2,3,4,5]` assumed; the source notes variable collation (some boxes split the first common sheet top-5/bottom-6; width-1 stripes observed).
 - 🟡 Two common-sheet printings exist; only version 1 is modelled.
 

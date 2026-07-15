@@ -12,7 +12,7 @@ const data = sheets as unknown as { common: string[][]; uncommon: string[][]; ra
  *
  * ⚠️ PLACEHOLDER RARE SHEET. The Collation Project page has galleries for the
  * common and uncommon sheets but NOT the rare sheet, so the rare grid here is
- * FABRICATED: the 121 real rares in Scryfall collector-number order, not the
+ * FABRICATED: the 121 real rares in a randomised (seeded shuffle) order, not the
  * true print-sheet order. Rare collation for Ice Age is therefore NOT accurate —
  * it is a stand-in until the real rare sheet is sourced. Commons and uncommons
  * are the real sheet data (common uses "version 1", the earlier of two printings

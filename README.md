@@ -15,7 +15,7 @@ is a correlated run of cards and a box is not N independent packs.
 
 ## Sets
 
-Eleven sets, from Alpha (1993) through Mirage (1996). For each set's exact
+Twelve sets, from Alpha (1993) through Mirage (1996). For each set's exact
 per-sheet structure and how confident we are in its collation (validated /
 assumed / simplified / placeholder), see the **[status matrix in
 ASSUMPTIONS.md](./ASSUMPTIONS.md#status-matrix)**.
@@ -26,6 +26,7 @@ ASSUMPTIONS.md](./ASSUMPTIONS.md#status-matrix)**.
 | `leb` | Limited Edition Beta (1993) |
 | `2ed` | Unlimited Edition (1993) |
 | `3ed` | Revised Edition (1994) |
+| `4ed` | Fourth Edition (1995) |
 | `arn` | Arabian Nights (1993) |
 | `atq` | Antiquities (1994) |
 | `leg` | Legends (1994) |
@@ -99,7 +100,7 @@ sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
 - Legends has three sheets (common 75, uncommon 114, rare 121 — checksum-validated). Its uncommon sheet is collated as two half-sheets — top 6 rows ("A", incl. Mana Drain) and bottom 5 rows ("B", incl. Karakas) — and a whole box draws uncommons from one half; pass `openPacks(leg, n, { half: 'A' | 'B' })`. **Provisional**: stripe widths assumed `[2,3,4,5]`, and the half split assumed row-major top-6/bottom-5 (doesn't perfectly reproduce the source's "only Hammerheim on both halves"), pending validation against box openings.
 - The Dark is like Arabian Nights/Antiquities: no rare sheet, rarity by repeat count (common: 40×C3 + Maze of Ith ×1; uncommon: 43×U2 + 35×U1, both checksum-validated). Its real collation is **variable per box** (sheets may or may not split, with 2–3 independent common sequences, or width-7 stripes when unsplit), so it can't be reproduced deterministically — we model it as a plain two-sheet striped set with an assumed `[2,3,4,5]` cycle. The grids are validated; the pack grouping is a deliberate simplification.
 - Fallen Empires: no rare sheet (common: 15×C4 + 20×C3 + Delif's Cone ×1; uncommon: 25×U3 + 5×U2 + 36×U1, checksum-validated). Its commons are **multi-art** — a common has a distinct artwork for each time it appears (C4 → four, C3 → three), notated `(A)`–`(D)`. Like The Dark, the uncommon sheet may or may not split per box, so collation is simplified to a plain two-sheet striped model with an assumed `[2,3,4,5]` cycle.
-- Ice Age (121 commons / 121 uncommons / 121 rares) has **real** common and uncommon sheets, but its **rare sheet is a placeholder**: the Collation Project page has no rare-sheet gallery, so the rare grid is the 121 real rares in Scryfall collector order — **not** the true print-sheet order. Ice Age rare collation is therefore not accurate; it's a stand-in until the real rare sheet is sourced. Basic/snow-covered lands are on a separate land sheet and don't appear in boosters. Common uses "version 1" of two printings; stripe cycle `[2,3,4,5]` assumed.
+- Ice Age (121 commons / 121 uncommons / 121 rares) has **real** common and uncommon sheets, but its **rare sheet is a placeholder**: the Collation Project page has no rare-sheet gallery, so the rare grid is the 121 real rares in a **randomised (seeded)** order — **not** the true print-sheet order. Ice Age rare collation is therefore not accurate; it's a stand-in until the real rare sheet is sourced. Basic/snow-covered lands are on a separate land sheet and don't appear in boosters. Common uses "version 1" of two printings; stripe cycle `[2,3,4,5]` assumed.
 - Mirage (110 commons / 110 uncommons / 110 rares, all real grids) had two printings — a US *sequential* one (four common runs) and a Belgian *striped* one. We model the **Belgian striped** printing; the engine now supports sequential collation, but the US printing's multi-run, probabilistic-split assembly isn't modelled yet. Sheets are **10×11** (non-square), so the walk depends on row/column orientation, which the source doesn't pin down — we assume 10 rows × 11 columns. Stripe cycle `[2,3,4,5]` assumed. Basic lands (four variations) aren't in boosters.
 
 See [ASSUMPTIONS.md](./ASSUMPTIONS.md) for the full list of modelling assumptions and their validation status.

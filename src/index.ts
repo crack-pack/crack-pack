@@ -33,4 +33,5 @@ export { fem } from './sets/fem/index.ts';
 export { revised } from './sets/3ed/index.ts';
 export { ice } from './sets/ice/index.ts';
 export { mir } from './sets/mir/index.ts';
+export { fourthEdition } from './sets/4ed/index.ts';
 export { sets, getSet } from './sets/index.ts';

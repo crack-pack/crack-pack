@@ -15,9 +15,11 @@ Part of [crack-pack](../README.md) · see the [status matrix](../ASSUMPTIONS.md#
   the true order of the 121 rares is unknown.
 
 ## What we assumed
-- The rare grid is a **placeholder**: the 121 real Ice Age rares in **Scryfall
-  collector-number order — not the true print-sheet order.** Ice Age *rare*
-  collation is therefore **not accurate** and is a stand-in.
+- The rare grid is a **placeholder**: the 121 real Ice Age rares in a
+  **randomised (seeded shuffle) order, persisted to disk — not the true
+  print-sheet order.** Ice Age *rare* collation is therefore **not accurate** and
+  is a stand-in. (A random order is used because Ice Age has no predecessor base
+  set to reconstruct from, unlike 4th Edition which is based on Revised.)
 - Common uses "version 1" of two shown printings; stripe cycle **`[2,3,4,5]`** assumed.
 
 ## How you can help
