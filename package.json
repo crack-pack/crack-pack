@@ -1,6 +1,6 @@
 {
   "name": "crack-pack",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "A Magic: The Gathering pack-collation simulator — as realistic as the available print-sheet data allows (see ASSUMPTIONS.md; contributions welcome)",
   "type": "module",
   "main": "./dist/index.js",
