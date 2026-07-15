@@ -1,5 +1,7 @@
 # crack-pack
 
+[![npm version](https://img.shields.io/npm/v/crack-pack.svg)](https://www.npmjs.com/package/crack-pack)
+
 A dependency-free TypeScript library that simulates Magic: The Gathering pack
 openings **as realistically as the available print-sheet data allows** — by
 modelling the physical **print-sheet collation** process rather than flat rarity
@@ -8,8 +10,8 @@ is a correlated run of cards and a box is not N independent packs.
 
 > **How realistic?** Only as realistic as the underlying data. For some sets the
 > sheets and collation are validated against real openings; for others the sheet
-> data is solid but the collation is assumed, simplified, or (in one case) the
-> sheet itself is a placeholder. Every such gap is documented, per set, in
+> data is solid but the collation is assumed or simplified, and one rare sheet is
+> reconstructed from a predecessor set. Every such gap is documented, per set, in
 > **[ASSUMPTIONS.md](./ASSUMPTIONS.md)** — read it before trusting any given
 > set's output. **Help closing these gaps is very welcome — see [Help wanted](#help-wanted).**
 
