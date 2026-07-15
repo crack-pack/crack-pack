@@ -1,6 +1,7 @@
 import type { CardEntry, OpenedCard, Pack, Rarity, SetDefinition, Sheet, SheetHalf } from './types.ts';
 import { makeRng } from './rng.ts';
 import { stripedWalk, cyclicWidths, stripedPeriod } from './collation/striped.ts';
+import { sequentialWalk, sequentialPeriod } from './collation/sequential.ts';
 
 const DEFAULT_STRIPE_CYCLE = [2, 3, 4, 5];
 
@@ -74,9 +75,10 @@ export interface OpenOptions {
  * (which N); packs are then cut consecutively, reproducing box-level correlation.
  */
 export function openPacks(set: SetDefinition, count: number, opts: OpenOptions = {}): Pack[] {
-  if (set.collation !== 'striped') {
-    throw new Error(`collation method '${set.collation}' is not implemented yet`);
+  if (set.collation !== 'striped' && set.collation !== 'sequential') {
+    throw new Error(`collation method '${set.collation}' is not implemented`);
   }
+  const sequential = set.collation === 'sequential';
 
   const half: SheetHalf = opts.half ?? 'A';
 
@@ -100,7 +102,9 @@ export function openPacks(set: SetDefinition, count: number, opts: OpenOptions =
   let period = 1;
   for (const [rarity, n] of perPack) {
     const g = grids.get(rarity) as CardEntry[][];
-    const cardPeriod = stripedPeriod(widthsFor(set, rarity), g.length, g[0].length);
+    const cardPeriod = sequential
+      ? sequentialPeriod(g.length, g[0].length)
+      : stripedPeriod(widthsFor(set, rarity), g.length, g[0].length);
     period = lcm(period, cardPeriod / gcd(cardPeriod, n));
   }
 
@@ -116,7 +120,9 @@ export function openPacks(set: SetDefinition, count: number, opts: OpenOptions =
   for (const slot of set.layout.slots) {
     if (streams.has(slot.sheet)) continue;
     const g = grids.get(slot.sheet) as CardEntry[][];
-    const next = stripedWalk(g, { nextWidth: cyclicWidths(widthsFor(set, slot.sheet)) });
+    const next = sequential
+      ? sequentialWalk(g)
+      : stripedWalk(g, { nextWidth: cyclicWidths(widthsFor(set, slot.sheet)) });
     const skip = (perPack.get(slot.sheet) as number) * startPack;
     for (let i = 0; i < skip; i++) next();
     streams.set(slot.sheet, next);

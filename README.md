@@ -26,7 +26,7 @@ so a pack is a correlated run of cards and a box is not N independent packs.
 | Type | Meaning |
 | --- | --- |
 | `Sheet` | Ordered 11×11 grid of card positions; basic lands are filler and can appear in any slot. |
-| `CollationMethod` | How a sheet is walked into a stream. `striped` implemented; `sequential` planned. |
+| `CollationMethod` | How a sheet is walked into a stream. Both `striped` and `sequential` (plain row-major read, wrapping) are implemented. |
 | `stripeCycle` | Repeating stripe-width cycle (Alpha `[2,3,4,5]`); collation is deterministic given it. Either one cycle for the whole set, or a per-rarity map when sheets stripe differently (Arabian Nights: common `[3,4,5]`, uncommon `[3,4]`). |
 | `PackLayout` | Cards drawn per sheet, in order. Booster: 11C / 3U / 1R. Starter: 45C / 13U / 2R. Arabian Nights: 6C / 2U (no rare). |
 | `SetDefinition` | `code`, `name`, `sheets`, `layout`, `stripeCycle`; resolved via `getSet(code)` / `sets`. |

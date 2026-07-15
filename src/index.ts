@@ -18,6 +18,8 @@ export type {
 export { makeRng } from './rng.ts';
 export { stripedWalk, cyclicWidths, stripedPeriod } from './collation/striped.ts';
 export type { StripedWalkOptions } from './collation/striped.ts';
+export { sequentialWalk, sequentialPeriod } from './collation/sequential.ts';
+export type { SequentialWalkOptions } from './collation/sequential.ts';
 export { openPack, openPacks } from './assembler.ts';
 export type { OpenOptions } from './assembler.ts';
 export { lea } from './sets/lea/index.ts';
