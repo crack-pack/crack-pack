@@ -60,6 +60,8 @@ interface Args {
   ratesArg?: Rarity | 'all';
   /** `--diff` → 'auto'; `--diff=orientation` / `--diff=cycle:2,3,4,5`. */
   diffArg?: string;
+  /** `--card="Serra Angel"` → find that card's sheet cells and packs. */
+  cardArg?: string;
   copyText: boolean;
   copyJson: boolean;
   /** `--find="a, b"` → a query string; bare `--find` → true (read clipboard). */
@@ -110,6 +112,10 @@ function parseArgs(argv: string[]): Args {
         break;
       case 'diff':
         args.diffArg = value ?? 'auto';
+        break;
+      case 'card':
+      case 'find-card':
+        args.cardArg = value ?? '';
         break;
       case 'copy':
         args.copyText = true;
@@ -578,6 +584,49 @@ function renderDiff(set: SetDefinition, startPack: number, spec: string): void {
   );
 }
 
+/**
+ * Find-my-card: given a name, show every cell it occupies (across all rarity
+ * sheets — basic lands appear as filler on several) and every pack index in
+ * the period that contains it. Matches on the variant-stripped key, so "Island"
+ * finds all its variants.
+ */
+function renderFindCard(set: SetDefinition, query: string): void {
+  const key = nameKey(query);
+  console.log(`\n=== Finding "${query}" in ${set.name} ===\n`);
+
+  // Sheet cells, grouped by rarity.
+  const cells: Record<string, string[]> = {};
+  for (const rarity of RARITY_ORDER) {
+    const sheet = set.sheets[rarity];
+    if (!sheet) continue;
+    for (let i = 0; i < sheet.cards.length; i++) {
+      if (nameKey(label(sheet.cards[i])) !== key) continue;
+      (cells[rarity] ??= []).push(`row ${Math.floor(i / sheet.cols) + 1}, col ${(i % sheet.cols) + 1}`);
+    }
+  }
+  const found = Object.keys(cells).length > 0;
+  if (!found) {
+    console.log('  not found on any sheet — check the spelling and set code.');
+    return;
+  }
+  for (const rarity of RARITY_ORDER) {
+    if (cells[rarity]) console.log(`  ${rarity} sheet (${cells[rarity].length}×): ${cells[rarity].join(' · ')}`);
+  }
+
+  // Pack membership over the full period.
+  const N = packPeriod(set);
+  const packs = openPacks(set, N, { startPack: 0, half: 'A' });
+  const hits: number[] = [];
+  for (let n = 0; n < packs.length; n++) {
+    if (packs[n].some((c) => nameKey(label(c)) === key)) hits.push(n);
+  }
+  const sample = hits.slice(0, 12).join(', ');
+  const split = set.splitSheets ? ' (uncommon half A)' : '';
+  console.log(
+    `\n  appears in ${hits.length} of ${N} packs${split} — e.g. ${sample}${hits.length > 12 ? ', …' : ''}`,
+  );
+}
+
 // --- clipboard -------------------------------------------------------------
 
 function copyToClipboard(text: string, what: string): void {
@@ -705,6 +754,7 @@ options:
                       odds scale with how many times a card is printed
   --diff=<spec>       open this pack under a variant assumption and diff it;
                       spec: 'orientation' or 'cycle:W,W,...' (see ASSUMPTIONS)
+  --card="Name"       show a card's sheet cell(s) and every pack containing it
   --copy              copy the pack to the clipboard as text
   --copy-json         copy the pack to the clipboard as JSON
   --find="a, b, …"    reverse lookup: find which pack these cards came from
@@ -812,6 +862,18 @@ function main(): void {
       console.log(`\n(assumption diff supports striped collation only; ${set.name} is ${set.collation})`);
     } else {
       renderDiff(set, startPack, args.diffArg);
+    }
+  }
+
+  // Find-my-card -----------------------------------------------------------
+  if (args.cardArg !== undefined) {
+    if (!args.cardArg) {
+      console.error('--card: give a name, e.g. --card="Serra Angel"');
+      process.exitCode = 1;
+    } else if (!striped) {
+      console.log(`\n(find-my-card supports striped collation only; ${set.name} is ${set.collation})`);
+    } else {
+      renderFindCard(set, args.cardArg);
     }
   }
 

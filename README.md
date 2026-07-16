@@ -90,6 +90,7 @@ npm run demo lea --reconstruct    # rebuild the whole sheet from packs alone
 npm run demo lea --complete       # packs needed to see every card (vs random)
 npm run demo atq --rates          # per-pack pull rates by print count
 npm run demo mir --diff=orientation  # what a provisional assumption changes
+npm run demo lea --card="Serra Angel"  # its sheet cell(s) and which packs
 npm run demo lea --copy           # copy the pack to the clipboard (--copy-json for JSON)
 npm run demo --help               # all options
 ```
