@@ -62,6 +62,8 @@ interface Args {
   diffArg?: string;
   /** `--card="Serra Angel"` → find that card's sheet cells and packs. */
   cardArg?: string;
+  /** `--csv` → '' (default box size); `--csv=60` → that many packs. */
+  csvArg?: string;
   copyText: boolean;
   copyJson: boolean;
   /** `--find="a, b"` → a query string; bare `--find` → true (read clipboard). */
@@ -116,6 +118,10 @@ function parseArgs(argv: string[]): Args {
       case 'card':
       case 'find-card':
         args.cardArg = value ?? '';
+        break;
+      case 'csv':
+      case 'export-csv':
+        args.csvArg = value ?? '';
         break;
       case 'copy':
         args.copyText = true;
@@ -627,6 +633,60 @@ function renderFindCard(set: SetDefinition, query: string): void {
   );
 }
 
+/** The walk over a rarity's grid, using the chosen half for a split sheet. */
+function walkForRarity(set: SetDefinition, rarity: Rarity, half: SheetHalf): { order: Array<{ r: number; c: number }>; period: number } {
+  const sheet = set.sheets[rarity] as Sheet;
+  const split = set.splitSheets?.[rarity];
+  let rows = sheet.rows;
+  let cards = sheet.cards;
+  if (split) {
+    if (half === 'A') {
+      rows = split.topRows;
+      cards = sheet.cards.slice(0, split.topRows * sheet.cols);
+    } else {
+      rows = sheet.rows - split.topRows;
+      cards = sheet.cards.slice(split.topRows * sheet.cols);
+    }
+  }
+  return walkPath({ rarity, rows, cols: sheet.cols, cards }, widthsFor(set, rarity));
+}
+
+/** Escape a CSV field (quote if it contains a comma, quote, or newline). */
+function csvField(v: string): string {
+  return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+}
+
+/**
+ * Box CSV export: dump `count` consecutive packs (from `start`) as CSV, one row
+ * per card — pack index, slot, card, and its sheet position (row/col + walk
+ * position). Prints only the CSV, so `npm run demo lea --csv > box.csv` works.
+ * Pack and walk indices are 0-based/1-based to match the rest of the CLI.
+ */
+function emitBoxCsv(set: SetDefinition, start: number, count: number, half: SheetHalf): void {
+  const perPack = perPackBySheet(set);
+  const walks = new Map<Rarity, { order: Array<{ r: number; c: number }>; period: number }>();
+  for (const rarity of perPack.keys()) walks.set(rarity, walkForRarity(set, rarity, half));
+
+  const lines = ['pack,slot,slot_index,card,is_land,sheet_row,sheet_col,walk_pos'];
+  const packs = openPacks(set, count, { startPack: start, half });
+  packs.forEach((pack, i) => {
+    const packIndex = start + i;
+    const counters = new Map<Rarity, number>();
+    for (const c of pack) {
+      const rarity = c.fromSheet;
+      const j = counters.get(rarity) ?? 0;
+      counters.set(rarity, j + 1);
+      const w = walks.get(rarity) as { order: Array<{ r: number; c: number }>; period: number };
+      const idx = ((perPack.get(rarity) as number) * packIndex + j) % w.period;
+      const { r, c: col } = w.order[idx];
+      lines.push(
+        [packIndex, rarity, j + 1, csvField(label(c)), c.isBasicLand, r + 1, col + 1, idx + 1].join(','),
+      );
+    }
+  });
+  console.log(lines.join('\n'));
+}
+
 // --- clipboard -------------------------------------------------------------
 
 function copyToClipboard(text: string, what: string): void {
@@ -755,6 +815,8 @@ options:
   --diff=<spec>       open this pack under a variant assumption and diff it;
                       spec: 'orientation' or 'cycle:W,W,...' (see ASSUMPTIONS)
   --card="Name"       show a card's sheet cell(s) and every pack containing it
+  --csv[=packs]       dump a box as CSV (pack, slot, card, sheet position);
+                      prints only CSV, so 'npm run demo lea --csv > box.csv'
   --copy              copy the pack to the clipboard as text
   --copy-json         copy the pack to the clipboard as JSON
   --find="a, b, …"    reverse lookup: find which pack these cards came from
@@ -797,6 +859,18 @@ function main(): void {
 
   const striped = set.collation === 'striped';
   const startPack = striped ? resolveStartPack(set, args) : (args.startPack ?? 0);
+
+  // CSV export mode: emit only the CSV (redirectable), then stop.
+  if (args.csvArg !== undefined) {
+    if (!striped) {
+      console.error(`--csv supports striped collation only; ${set.name} is ${set.collation}`);
+      process.exitCode = 1;
+      return;
+    }
+    const count = Number(args.csvArg) > 0 ? Math.floor(Number(args.csvArg)) : 36;
+    emitBoxCsv(set, startPack, count, 'A');
+    return;
+  }
 
   const pack = openPack(set, { startPack });
 
