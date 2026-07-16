@@ -79,8 +79,13 @@ const box = openPacks(lea, 36, { seed: 42 });  // 36 correlated packs, reproduci
 Runs on Node 22.18+ with no build step (native TypeScript type-stripping):
 
 ```sh
-npm test          # sheet + collation tests
-npm run demo 42   # open a pack
+npm test                          # sheet + collation tests
+npm run demo 42                   # open an Alpha pack, seeded
+npm run demo mir 42               # any set by code
+npm run demo lea --start-pack=0   # the canonical first-ever pack (Timetwister)
+npm run demo ice --sheet          # draw the sheet with the pack's walk marked on it
+npm run demo lea --copy           # copy the pack to the clipboard (--copy-json for JSON)
+npm run demo --help               # all options
 ```
 
 ## Data & validation
