@@ -30,6 +30,21 @@ const RARITY_ORDER: Rarity[] = ['common', 'uncommon', 'rare'];
 const label = (c: OpenedCard | CardEntry): string =>
   c.isBasicLand && c.variant ? `${c.name} (${c.variant})` : c.name;
 
+// Notable packs worth a callout when you happen to open them. Keyed by set code
+// then pack index. Anything not listed falls back to the generic pack-0 note.
+const FAMOUS: Record<string, Record<number, string>> = {
+  lea: {
+    0: 'The first pack a fresh Alpha print run ever produced. Because every sheet starts at position 1 together, this exact pack is fixed — and its rare, Timetwister, is the very first card off the rare sheet.',
+  },
+};
+
+function famousNote(set: SetDefinition, startPack: number): string | null {
+  const specific = FAMOUS[set.code]?.[startPack];
+  if (specific) return specific;
+  if (startPack === 0) return `Pack 0 — the first pack a fresh ${set.name} print run produces (position 1 on every sheet).`;
+  return null;
+}
+
 // --- argument parsing ------------------------------------------------------
 
 interface Args {
@@ -592,6 +607,8 @@ function main(): void {
     const cards = pack.filter((c) => c.fromSheet === rarity).map(label);
     if (cards.length) console.log(`${rarity.padEnd(9)} ${cards.join(', ')}`);
   }
+  const famous = famousNote(set, startPack);
+  if (famous) console.log(`\n★ ${famous}`);
 
   // biggest slot → the most illustrative walk (used for auto sheet/neighbours).
   const biggestSlot = (): Rarity => [...perPackBySheet(set).entries()].sort((a, b) => b[1] - a[1])[0][0];
