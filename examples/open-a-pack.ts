@@ -39,6 +39,8 @@ interface Args {
   sheetRarity?: Rarity | 'auto';
   neighboursRarity?: Rarity | 'auto';
   reconstructRarity?: Rarity | 'auto';
+  /** `--complete` → 'all' (whole set); `--complete=rare` → that rarity. */
+  completeArg?: Rarity | 'all';
   copyText: boolean;
   copyJson: boolean;
   /** `--find="a, b"` → a query string; bare `--find` → true (read clipboard). */
@@ -78,6 +80,9 @@ function parseArgs(argv: string[]): Args {
       case 'reconstruct':
       case 'rebuild':
         args.reconstructRarity = (value as Rarity) ?? 'auto';
+        break;
+      case 'complete':
+        args.completeArg = (value as Rarity) ?? 'all';
         break;
       case 'copy':
         args.copyText = true;
@@ -360,6 +365,60 @@ function renderReconstruct(set: SetDefinition, rarity: Rarity, half: SheetHalf):
   console.log(`\n  rebuilt row 1: ${grid[0].map((_, c) => recon[c]).join(' · ')}`);
 }
 
+/**
+ * "Complete the set" walk: how many consecutive packs (from pack 0) until every
+ * distinct card of a rarity — and of the whole set — has been seen at least
+ * once. Because collation is deterministic this is a FIXED number, far below
+ * the coupon-collector expectation a uniform-random opener would face. The
+ * target ("all distinct cards") is taken from a full period, so short-printed
+ * cards and split sheets (which reduce the reachable pool) are handled honestly.
+ */
+function renderComplete(set: SetDefinition, only: Rarity | undefined): void {
+  const half: SheetHalf = 'A';
+  const period = packPeriod(set);
+  const packs = openPacks(set, period, { startPack: 0, half });
+
+  const rarities = (only ? [only] : [...perPackBySheet(set).keys()])
+    .filter((r) => set.sheets[r])
+    .sort((a, b) => RARITY_ORDER.indexOf(a) - RARITY_ORDER.indexOf(b));
+
+  const harmonic = (n: number): number => {
+    let h = 0;
+    for (let i = 1; i <= n; i++) h += 1 / i;
+    return h;
+  };
+
+  console.log(`\n=== Completing ${set.name} from pack 0${only ? ` (${only} only)` : ''} ===\n`);
+
+  const rows: Array<{ rarity: Rarity; target: number; perPack: number; packsN: number }> = [];
+  for (const rarity of rarities) {
+    const perPack = perPackBySheet(set).get(rarity) ?? 0;
+    const target = new Set<string>();
+    for (const p of packs) for (const c of p) if (c.fromSheet === rarity) target.add(label(c));
+
+    const seen = new Set<string>();
+    let at = 0;
+    for (let i = 0; i < packs.length; i++) {
+      for (const c of packs[i]) if (c.fromSheet === rarity) seen.add(label(c));
+      if (seen.size === target.size) {
+        at = i + 1;
+        break;
+      }
+    }
+    const split = set.splitSheets?.[rarity] ? ' (half A)' : '';
+    console.log(`  ${rarity.padEnd(9)} ${String(target.size).padStart(3)} distinct${split} · complete after ${at} packs`);
+    rows.push({ rarity, target: target.size, perPack, packsN: at });
+  }
+
+  const bind = rows.reduce((a, b) => (b.packsN > a.packsN ? b : a));
+  const est = Math.round((bind.target * harmonic(bind.target)) / bind.perPack);
+  console.log(
+    `\n→ ${only ? `every ${only}` : 'every card in the set'} seen after ${bind.packsN} consecutive packs — ` +
+      `fixed, because collation is deterministic (bound by the ${bind.rarity} slot).`,
+  );
+  console.log(`  a uniform-random opener would expect ~${est} packs for that slot (coupon-collector).`);
+}
+
 // --- clipboard -------------------------------------------------------------
 
 function copyToClipboard(text: string, what: string): void {
@@ -481,6 +540,8 @@ options:
                       how consecutive packs cut one continuous run
   --reconstruct[=rar] rebuild the whole print sheet from opened packs alone,
                       proving the collation is lossless and deterministic
+  --complete[=rar]    how many consecutive packs to see every distinct card
+                      (fixed, vs a random opener's coupon-collector estimate)
   --copy              copy the pack to the clipboard as text
   --copy-json         copy the pack to the clipboard as JSON
   --find="a, b, …"    reverse lookup: find which pack these cards came from
@@ -559,6 +620,15 @@ function main(): void {
       console.log(`\n(sheet reconstruction supports striped collation only; ${set.name} is ${set.collation})`);
     } else {
       renderReconstruct(set, args.reconstructRarity === 'auto' ? biggestSlot() : args.reconstructRarity, 'A');
+    }
+  }
+
+  // "Complete the set" walk ------------------------------------------------
+  if (args.completeArg !== undefined) {
+    if (!striped) {
+      console.log(`\n("complete the set" supports striped collation only; ${set.name} is ${set.collation})`);
+    } else {
+      renderComplete(set, args.completeArg === 'all' ? undefined : args.completeArg);
     }
   }
 
