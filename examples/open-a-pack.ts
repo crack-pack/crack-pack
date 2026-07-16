@@ -8,7 +8,7 @@ import {
   cyclicWidths,
   stripedPeriod,
 } from '../src/index.ts';
-import type { CardEntry, OpenedCard, Rarity, Sheet, SetDefinition } from '../src/index.ts';
+import type { CardEntry, OpenedCard, Rarity, Sheet, SetDefinition, SheetHalf } from '../src/index.ts';
 
 // ---------------------------------------------------------------------------
 // crack-pack demo — open a pack and explore how it was cut from the print sheet.
@@ -40,6 +40,8 @@ interface Args {
   neighboursRarity?: Rarity | 'auto';
   copyText: boolean;
   copyJson: boolean;
+  /** `--find="a, b"` → a query string; bare `--find` → true (read clipboard). */
+  find?: string | true;
   help: boolean;
 }
 
@@ -78,6 +80,9 @@ function parseArgs(argv: string[]): Args {
       case 'copy-json':
       case 'json':
         args.copyJson = true;
+        break;
+      case 'find':
+        args.find = value ?? true;
         break;
       default:
         console.error(`unknown flag: --${flag}`);
@@ -284,6 +289,97 @@ function copyToClipboard(text: string, what: string): void {
   console.log(`\n📋 copied ${what} to the clipboard`);
 }
 
+function readClipboard(): string | undefined {
+  const res = spawnSync('pbpaste', { encoding: 'utf8' });
+  if (res.error || res.status !== 0) return undefined;
+  return res.stdout;
+}
+
+// --- reverse lookup: which pack did these cards come from? -----------------
+
+/** Card name → comparison key: lowercased, trailing "(variant/art)" suffix dropped. */
+function nameKey(name: string): string {
+  return name.toLowerCase().replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
+/**
+ * Pull card names out of a query string. Accepts a bare comma list
+ * ("Timetwister, Psionic Blast") or the multi-line text `--copy` produces
+ * (a "Set — pack N" header + "common …/uncommon …/rare …" lines).
+ */
+function parseFindQuery(text: string): string[] {
+  const names: string[] = [];
+  for (const rawLine of text.split('\n')) {
+    let line = rawLine.trim();
+    if (!line) continue;
+    if (line.includes('—') || /\bpack\b/i.test(line)) continue; // header line
+    line = line.replace(/^(common|uncommon|rare)\b\s*/i, ''); // slot label
+    for (const part of line.split(',')) {
+      const name = part.trim();
+      if (name) names.push(name);
+    }
+  }
+  return names;
+}
+
+/** Is the query multiset a subset of the pack's card keys? */
+function packContains(packKeys: string[], queryKeys: string[]): boolean {
+  const pool = [...packKeys];
+  for (const q of queryKeys) {
+    const i = pool.indexOf(q);
+    if (i === -1) return false;
+    pool.splice(i, 1);
+  }
+  return true;
+}
+
+function reverseLookup(set: SetDefinition, queryNames: string[]): void {
+  if (set.collation !== 'striped') {
+    console.log(`\n(reverse lookup supports striped collation only; ${set.name} is ${set.collation})`);
+    return;
+  }
+  const queryKeys = queryNames.map(nameKey);
+  console.log(`\n=== Where in ${set.name}'s print run did this come from? ===\n`);
+  console.log(`  looking for: ${queryNames.join(', ')}`);
+
+  const period = packPeriod(set);
+  const halves: SheetHalf[] = set.splitSheets ? ['A', 'B'] : ['A'];
+  const matches: Array<{ n: number; half: SheetHalf }> = [];
+  for (const half of halves) {
+    const packs = openPacks(set, period, { startPack: 0, half });
+    packs.forEach((pack, n) => {
+      if (packContains(pack.map((c) => nameKey(label(c))), queryKeys)) matches.push({ n, half });
+    });
+  }
+
+  if (matches.length === 0) {
+    console.log('\n  no matching pack — check the set code and card spellings.');
+    return;
+  }
+  if (matches.length > 1) {
+    const shown = matches.slice(0, 8).map((m) => `${m.n}${halves.length > 1 ? ` (half ${m.half})` : ''}`);
+    console.log(`\n  ${matches.length} packs match — add more cards (especially commons) to pin it down:`);
+    console.log(`  ${shown.join(', ')}${matches.length > shown.length ? ', …' : ''}`);
+    return;
+  }
+
+  // Unique match → show it and its neighbours.
+  const { n, half } = matches[0];
+  console.log(`\n  ✓ pack ${n}${halves.length > 1 ? ` (uncommon half ${half})` : ''} of ${period}`);
+  for (const [idx, tag] of [
+    [n - 1, 'before'],
+    [n, 'THIS pack'],
+    [n + 1, 'after'],
+  ] as const) {
+    const p = openPack(set, { startPack: ((idx % period) + period) % period, half });
+    console.log(`\n  pack ${((idx % period) + period) % period} (${tag}):`);
+    for (const rarity of RARITY_ORDER) {
+      const cards = p.filter((c) => c.fromSheet === rarity).map(label);
+      if (cards.length) console.log(`    ${rarity.padEnd(9)} ${cards.join(', ')}`);
+    }
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 const HELP = `crack-pack demo — open a pack and see how it was cut from the print sheet
@@ -303,6 +399,8 @@ options:
                       how consecutive packs cut one continuous run
   --copy              copy the pack to the clipboard as text
   --copy-json         copy the pack to the clipboard as JSON
+  --find="a, b, …"    reverse lookup: find which pack these cards came from
+                      (bare --find reads the clipboard — pairs with --copy)
   --help              this message`;
 
 function main(): void {
@@ -318,6 +416,24 @@ function main(): void {
   } catch {
     console.error(`unknown set code '${args.code}'. try one of: lea leb 2ed arn atq 3ed 4ed leg drk fem ice mir`);
     process.exitCode = 1;
+    return;
+  }
+
+  // Reverse-lookup mode: find which pack a set of cards came from, then stop.
+  if (args.find !== undefined) {
+    const text = args.find === true ? readClipboard() : args.find;
+    if (!text) {
+      console.error("--find: nothing to search (clipboard empty or 'pbpaste' unavailable). Try --find=\"Card A, Card B\".");
+      process.exitCode = 1;
+      return;
+    }
+    const query = parseFindQuery(text);
+    if (query.length === 0) {
+      console.error('--find: no card names found in the query.');
+      process.exitCode = 1;
+      return;
+    }
+    reverseLookup(set, query);
     return;
   }
 
