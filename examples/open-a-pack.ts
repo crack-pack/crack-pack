@@ -58,6 +58,8 @@ interface Args {
   completeArg?: Rarity | 'all';
   /** `--rates` → 'all'; `--rates=common` → that rarity. */
   ratesArg?: Rarity | 'all';
+  /** `--diff` → 'auto'; `--diff=orientation` / `--diff=cycle:2,3,4,5`. */
+  diffArg?: string;
   copyText: boolean;
   copyJson: boolean;
   /** `--find="a, b"` → a query string; bare `--find` → true (read clipboard). */
@@ -105,6 +107,9 @@ function parseArgs(argv: string[]): Args {
       case 'pull-rates':
       case 'odds':
         args.ratesArg = (value as Rarity) ?? 'all';
+        break;
+      case 'diff':
+        args.diffArg = value ?? 'auto';
         break;
       case 'copy':
         args.copyText = true;
@@ -505,6 +510,74 @@ function renderRates(set: SetDefinition, only: Rarity | undefined): void {
   console.log('\n  → flat per-card odds treat every card as equal; collation makes the chance scale with print count.');
 }
 
+/**
+ * Assumption A/B diff: open the same pack index under the set's default and
+ * under a variant assumption, then diff the cards. Makes the 🔴 provisional
+ * choices in ASSUMPTIONS.md tangible — you see exactly what changes if we
+ * guessed the sheet orientation or stripe cycle wrong.
+ *   --diff=orientation      swap rows/cols (non-square sheets, e.g. Mirage)
+ *   --diff=cycle:2,3,4,5     use a different stripe-width cycle
+ */
+function buildVariant(set: SetDefinition, spec: string): { set?: SetDefinition; desc?: string; error?: string } {
+  if (spec === 'auto' || spec === 'orientation') {
+    const nonSquare = RARITY_ORDER.some((r) => {
+      const sh = set.sheets[r];
+      return sh !== undefined && sh.rows !== sh.cols;
+    });
+    if (!nonSquare) return { error: `${set.name}'s sheets are square, so orientation is unambiguous — try --diff=cycle:W,W,...` };
+    const sheets = { ...set.sheets };
+    for (const r of RARITY_ORDER) {
+      const sh = set.sheets[r];
+      if (sh) sheets[r] = { ...sh, rows: sh.cols, cols: sh.rows };
+    }
+    const sample = RARITY_ORDER.map((r) => set.sheets[r]).find(Boolean) as Sheet;
+    return { set: { ...set, sheets }, desc: `orientation ${sample.cols}×${sample.rows} (rows/cols swapped)` };
+  }
+  if (spec.startsWith('cycle:')) {
+    const cyc = spec
+      .slice(6)
+      .split(',')
+      .map(Number)
+      .filter((n) => Number.isFinite(n) && n > 0);
+    if (!cyc.length) return { error: 'bad --diff=cycle spec; use e.g. --diff=cycle:2,3,4,5' };
+    return { set: { ...set, stripeCycle: cyc }, desc: `stripe cycle [${cyc.join(',')}]` };
+  }
+  return { error: `unknown --diff spec '${spec}'; use 'orientation' or 'cycle:W,W,...'` };
+}
+
+function renderDiff(set: SetDefinition, startPack: number, spec: string): void {
+  const v = buildVariant(set, spec);
+  if (v.error || !v.set) {
+    console.log(`\n(${v.error})`);
+    return;
+  }
+  const A = openPack(set, { startPack, half: 'A' });
+  const B = openPack(v.set, { startPack, half: 'A' });
+
+  console.log(`\n=== ${set.name} pack ${startPack} — default vs ${v.desc} ===\n`);
+  let diffs = 0;
+  let slots = 0;
+  for (const rarity of RARITY_ORDER) {
+    const a = A.filter((c) => c.fromSheet === rarity).map(label);
+    const b = B.filter((c) => c.fromSheet === rarity).map(label);
+    if (!a.length && !b.length) continue;
+    const n = Math.max(a.length, b.length);
+    for (let i = 0; i < n; i++) {
+      slots++;
+      if (a[i] !== b[i]) diffs++;
+    }
+    const mark = (xs: string[], other: string[]): string => xs.map((x, i) => (x === other[i] ? x : `${x} *`)).join(', ');
+    console.log(`${rarity.padEnd(9)} A: ${mark(a, b)}`);
+    console.log(`${' '.repeat(9)} B: ${mark(b, a)}`);
+  }
+  console.log(
+    `\n${diffs} of ${slots} slots differ (* = changed). ` +
+      (diffs
+        ? 'The assumption is not neutral — it changes which cards land in the pack.'
+        : 'The two assumptions happen to agree for this pack.'),
+  );
+}
+
 // --- clipboard -------------------------------------------------------------
 
 function copyToClipboard(text: string, what: string): void {
@@ -630,6 +703,8 @@ options:
                       (fixed, vs a random opener's coupon-collector estimate)
   --rates[=rar]       per-pack pull rates grouped by print count, showing
                       odds scale with how many times a card is printed
+  --diff=<spec>       open this pack under a variant assumption and diff it;
+                      spec: 'orientation' or 'cycle:W,W,...' (see ASSUMPTIONS)
   --copy              copy the pack to the clipboard as text
   --copy-json         copy the pack to the clipboard as JSON
   --find="a, b, …"    reverse lookup: find which pack these cards came from
@@ -728,6 +803,15 @@ function main(): void {
       console.log(`\n(pull rates support striped collation only; ${set.name} is ${set.collation})`);
     } else {
       renderRates(set, args.ratesArg === 'all' ? undefined : args.ratesArg);
+    }
+  }
+
+  // Assumption A/B diff ----------------------------------------------------
+  if (args.diffArg !== undefined) {
+    if (!striped) {
+      console.log(`\n(assumption diff supports striped collation only; ${set.name} is ${set.collation})`);
+    } else {
+      renderDiff(set, startPack, args.diffArg);
     }
   }
 
