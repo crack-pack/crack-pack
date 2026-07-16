@@ -37,6 +37,7 @@ interface Args {
   seed?: number;
   startPack?: number;
   sheetRarity?: Rarity | 'auto';
+  neighboursRarity?: Rarity | 'auto';
   copyText: boolean;
   copyJson: boolean;
   help: boolean;
@@ -65,6 +66,11 @@ function parseArgs(argv: string[]): Args {
         break;
       case 'sheet':
         args.sheetRarity = (value as Rarity) ?? 'auto';
+        break;
+      case 'neighbours':
+      case 'neighbors':
+      case 'adjacent':
+        args.neighboursRarity = (value as Rarity) ?? 'auto';
         break;
       case 'copy':
         args.copyText = true;
@@ -173,6 +179,19 @@ function walkPath(sheet: Sheet, cycle: number[]): { order: Array<{ r: number; c:
   return { order, period };
 }
 
+/** The cells feeding one pack's slot for a rarity, in draw order (handles wrap). */
+function packCoords(
+  order: Array<{ r: number; c: number }>,
+  period: number,
+  perPack: number,
+  packIndex: number,
+): Array<{ r: number; c: number }> {
+  const base = (((perPack * packIndex) % period) + period) % period;
+  const out: Array<{ r: number; c: number }> = [];
+  for (let i = 0; i < perPack; i++) out.push(order[(base + i) % period]);
+  return out;
+}
+
 function renderSheet(set: SetDefinition, rarity: Rarity, startPack: number): void {
   const sheet = set.sheets[rarity];
   if (!sheet) {
@@ -181,13 +200,11 @@ function renderSheet(set: SetDefinition, rarity: Rarity, startPack: number): voi
   }
   const perPack = perPackBySheet(set).get(rarity) ?? 0;
   const { order, period } = walkPath(sheet, widthsFor(set, rarity));
+  const coords = packCoords(order, period, perPack, startPack);
 
-  // Which cells feed THIS pack, in draw order → cell "r,c" -> 1-based order.
+  // cell "r,c" -> 1-based draw order.
   const pick = new Map<string, number>();
-  for (let i = 0; i < perPack; i++) {
-    const { r, c } = order[(perPack * startPack + i) % period];
-    pick.set(`${r},${c}`, i + 1);
-  }
+  coords.forEach(({ r, c }, i) => pick.set(`${r},${c}`, i + 1));
 
   console.log(
     `\n=== ${set.name} — ${rarity} sheet (${sheet.rows}×${sheet.cols}), pack ${startPack}'s ${perPack} ${rarity}s ===\n`,
@@ -205,10 +222,55 @@ function renderSheet(set: SetDefinition, rarity: Rarity, startPack: number): voi
   }
 
   console.log('\n  drawn in order:');
-  for (let i = 0; i < perPack; i++) {
-    const { r, c } = order[(perPack * startPack + i) % period];
+  coords.forEach(({ r, c }, i) => {
     console.log(`  ${String(i + 1).padStart(2)}. ${label(grid[r][c])}  (row ${r + 1}, col ${c + 1})`);
+  });
+}
+
+/**
+ * Adjacent-pack reveal: draw the sheet with THREE consecutive packs (N-1, N,
+ * N+1) marked. Consecutive packs never share a card — each cell is cut once per
+ * period — but their cells are contiguous, so the three runs snake up the sheet
+ * as one continuous walk. That physical correlation is the whole point of the
+ * library (a box is not 36 independent packs).
+ */
+function renderNeighbours(set: SetDefinition, rarity: Rarity, startPack: number): void {
+  const sheet = set.sheets[rarity];
+  if (!sheet) {
+    console.log(`\n(${set.name} has no ${rarity} sheet.)`);
+    return;
   }
+  const perPack = perPackBySheet(set).get(rarity) ?? 0;
+  const { order, period } = walkPath(sheet, widthsFor(set, rarity));
+  const grid = toGrid(sheet);
+
+  const prev = packCoords(order, period, perPack, startPack - 1);
+  const here = packCoords(order, period, perPack, startPack);
+  const next = packCoords(order, period, perPack, startPack + 1);
+
+  // cell "r,c" -> marker. The focus pack shows draw order; neighbours show < / >.
+  const mark = new Map<string, string>();
+  for (const { r, c } of prev) mark.set(`${r},${c}`, '  <');
+  for (const { r, c } of next) mark.set(`${r},${c}`, '  >');
+  here.forEach(({ r, c }, i) => mark.set(`${r},${c}`, String(i + 1).padStart(3)));
+
+  console.log(
+    `\n=== ${set.name} — ${rarity} sheet: packs ${startPack - 1} · ${startPack} · ${startPack + 1} ===\n`,
+  );
+  console.log('(< = previous pack   1..n = this pack, in draw order   > = next pack)');
+  console.log('three consecutive packs cut one continuous run up the sheet — no card is shared\n');
+
+  for (let r = 0; r < sheet.rows; r++) {
+    let line = '';
+    for (let c = 0; c < sheet.cols; c++) line += mark.get(`${r},${c}`) ?? '  ·';
+    console.log(line);
+  }
+
+  const names = (coords: Array<{ r: number; c: number }>): string =>
+    coords.map(({ r, c }) => label(grid[r][c])).join(', ');
+  console.log(`\n  pack ${startPack - 1} (<): ${names(prev)}`);
+  console.log(`  pack ${startPack} (this): ${names(here)}`);
+  console.log(`  pack ${startPack + 1} (>): ${names(next)}`);
 }
 
 // --- clipboard -------------------------------------------------------------
@@ -237,6 +299,8 @@ options:
   --start-pack=N      open an exact pack index (0 = first-ever pack)
   --sheet[=rarity]    draw the sheet with this pack's walk marked on it
                       (rarity: common|uncommon|rare; default: the biggest slot)
+  --neighbours[=rar]  draw the sheet with packs N-1, N, N+1 marked, showing
+                      how consecutive packs cut one continuous run
   --copy              copy the pack to the clipboard as text
   --copy-json         copy the pack to the clipboard as JSON
   --help              this message`;
@@ -268,17 +332,24 @@ function main(): void {
     if (cards.length) console.log(`${rarity.padEnd(9)} ${cards.join(', ')}`);
   }
 
+  // biggest slot → the most illustrative walk (used for auto sheet/neighbours).
+  const biggestSlot = (): Rarity => [...perPackBySheet(set).entries()].sort((a, b) => b[1] - a[1])[0][0];
+
   // Sheet visualization ----------------------------------------------------
   if (args.sheetRarity !== undefined) {
     if (!striped) {
       console.log(`\n(sheet visualization supports striped collation only; ${set.name} is ${set.collation})`);
     } else {
-      const rarity =
-        args.sheetRarity === 'auto'
-          ? // biggest slot → the most illustrative walk
-            [...perPackBySheet(set).entries()].sort((a, b) => b[1] - a[1])[0][0]
-          : args.sheetRarity;
-      renderSheet(set, rarity, startPack);
+      renderSheet(set, args.sheetRarity === 'auto' ? biggestSlot() : args.sheetRarity, startPack);
+    }
+  }
+
+  // Adjacent-pack reveal ---------------------------------------------------
+  if (args.neighboursRarity !== undefined) {
+    if (!striped) {
+      console.log(`\n(adjacent-pack reveal supports striped collation only; ${set.name} is ${set.collation})`);
+    } else {
+      renderNeighbours(set, args.neighboursRarity === 'auto' ? biggestSlot() : args.neighboursRarity, startPack);
     }
   }
 

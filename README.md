@@ -84,6 +84,7 @@ npm run demo 42                   # open an Alpha pack, seeded
 npm run demo mir 42               # any set by code
 npm run demo lea --start-pack=0   # the canonical first-ever pack (Timetwister)
 npm run demo ice --sheet          # draw the sheet with the pack's walk marked on it
+npm run demo lea --neighbours     # show packs N-1/N/N+1 as one continuous run
 npm run demo lea --copy           # copy the pack to the clipboard (--copy-json for JSON)
 npm run demo --help               # all options
 ```
