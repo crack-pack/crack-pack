@@ -38,6 +38,7 @@ interface Args {
   startPack?: number;
   sheetRarity?: Rarity | 'auto';
   neighboursRarity?: Rarity | 'auto';
+  reconstructRarity?: Rarity | 'auto';
   copyText: boolean;
   copyJson: boolean;
   /** `--find="a, b"` → a query string; bare `--find` → true (read clipboard). */
@@ -73,6 +74,10 @@ function parseArgs(argv: string[]): Args {
       case 'neighbors':
       case 'adjacent':
         args.neighboursRarity = (value as Rarity) ?? 'auto';
+        break;
+      case 'reconstruct':
+      case 'rebuild':
+        args.reconstructRarity = (value as Rarity) ?? 'auto';
         break;
       case 'copy':
         args.copyText = true;
@@ -278,6 +283,83 @@ function renderNeighbours(set: SetDefinition, rarity: Rarity, startPack: number)
   console.log(`  pack ${startPack + 1} (>): ${names(next)}`);
 }
 
+/**
+ * Reconstruct a whole print sheet purely from opened packs — the "…and it runs
+ * backwards" proof. Draw a full period of one rarity's cards from consecutive
+ * packs, drop each card back onto its walk coordinate, and show the original
+ * sheet reappears: every cell recovered exactly once, matching the source, and
+ * every repeat draw agreeing (which is what "deterministic collation" means).
+ */
+function renderReconstruct(set: SetDefinition, rarity: Rarity, half: SheetHalf): void {
+  const sheet = set.sheets[rarity];
+  if (!sheet) {
+    console.log(`\n(${set.name} has no ${rarity} sheet.)`);
+    return;
+  }
+  if (set.splitSheets?.[rarity]) {
+    console.log(`\n(sheet reconstruction skips split sheets; ${set.name}'s ${rarity} sheet is collated in halves.)`);
+    return;
+  }
+  const perPack = perPackBySheet(set).get(rarity) ?? 0;
+  const { order, period } = walkPath(sheet, widthsFor(set, rarity));
+  const total = sheet.rows * sheet.cols;
+
+  // Draw a full period of this rarity's cards from consecutive packs (from pack 0).
+  const packsToOpen = Math.ceil(period / perPack);
+  const stream: string[] = [];
+  for (const p of openPacks(set, packsToOpen, { startPack: 0, half })) {
+    for (const c of p) if (c.fromSheet === rarity) stream.push(label(c));
+  }
+
+  // Drop each drawn card back onto its walk coordinate.
+  const recon: (string | null)[] = new Array(total).fill(null);
+  let filled = 0;
+  let coverAt = -1;
+  let clashes = 0; // a cell that emitted two different cards → NOT deterministic
+  for (let i = 0; i < stream.length; i++) {
+    const { r, c } = order[i % period];
+    const key = r * sheet.cols + c;
+    if (recon[key] === null) {
+      recon[key] = stream[i];
+      if (++filled === total) coverAt = i;
+    } else if (recon[key] !== stream[i]) {
+      clashes++;
+    }
+  }
+  const packsToCover = coverAt >= 0 ? Math.ceil((coverAt + 1) / perPack) : packsToOpen;
+
+  // Compare the reconstruction against the real sheet.
+  const grid = toGrid(sheet);
+  let mismatches = 0;
+  for (let r = 0; r < sheet.rows; r++) {
+    for (let c = 0; c < sheet.cols; c++) if (recon[r * sheet.cols + c] !== label(grid[r][c])) mismatches++;
+  }
+
+  console.log(`\n=== Rebuilding ${set.name}'s ${rarity} sheet (${sheet.rows}×${sheet.cols}) from packs alone ===\n`);
+  console.log(
+    `opened ${packsToOpen} consecutive packs from pack 0 (${stream.length} ${rarity}s); all ${total} sheet ` +
+      `positions were recovered after the first ${packsToCover} packs — the rest are repeats.\n`,
+  );
+
+  // Coverage grid: every cell should come back as ✓.
+  for (let r = 0; r < sheet.rows; r++) {
+    let line = '';
+    for (let c = 0; c < sheet.cols; c++) line += recon[r * sheet.cols + c] !== null ? '  ✓' : '  ·';
+    console.log(line);
+  }
+
+  console.log('');
+  if (filled === total && mismatches === 0 && clashes === 0) {
+    console.log(
+      `✓ lossless: every cell recovered exactly once, the rebuilt sheet matches the original, and all ` +
+        `${stream.length - total} repeat draws agreed — the collation is fully deterministic.`,
+    );
+  } else {
+    console.log(`✗ ${total - filled} cells missing · ${mismatches} differ from the original · ${clashes} inconsistent repeats.`);
+  }
+  console.log(`\n  rebuilt row 1: ${grid[0].map((_, c) => recon[c]).join(' · ')}`);
+}
+
 // --- clipboard -------------------------------------------------------------
 
 function copyToClipboard(text: string, what: string): void {
@@ -397,6 +479,8 @@ options:
                       (rarity: common|uncommon|rare; default: the biggest slot)
   --neighbours[=rar]  draw the sheet with packs N-1, N, N+1 marked, showing
                       how consecutive packs cut one continuous run
+  --reconstruct[=rar] rebuild the whole print sheet from opened packs alone,
+                      proving the collation is lossless and deterministic
   --copy              copy the pack to the clipboard as text
   --copy-json         copy the pack to the clipboard as JSON
   --find="a, b, …"    reverse lookup: find which pack these cards came from
@@ -466,6 +550,15 @@ function main(): void {
       console.log(`\n(adjacent-pack reveal supports striped collation only; ${set.name} is ${set.collation})`);
     } else {
       renderNeighbours(set, args.neighboursRarity === 'auto' ? biggestSlot() : args.neighboursRarity, startPack);
+    }
+  }
+
+  // Sheet reconstruction ---------------------------------------------------
+  if (args.reconstructRarity !== undefined) {
+    if (!striped) {
+      console.log(`\n(sheet reconstruction supports striped collation only; ${set.name} is ${set.collation})`);
+    } else {
+      renderReconstruct(set, args.reconstructRarity === 'auto' ? biggestSlot() : args.reconstructRarity, 'A');
     }
   }
 
