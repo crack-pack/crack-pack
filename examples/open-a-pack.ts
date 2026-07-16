@@ -56,6 +56,8 @@ interface Args {
   reconstructRarity?: Rarity | 'auto';
   /** `--complete` → 'all' (whole set); `--complete=rare` → that rarity. */
   completeArg?: Rarity | 'all';
+  /** `--rates` → 'all'; `--rates=common` → that rarity. */
+  ratesArg?: Rarity | 'all';
   copyText: boolean;
   copyJson: boolean;
   /** `--find="a, b"` → a query string; bare `--find` → true (read clipboard). */
@@ -98,6 +100,11 @@ function parseArgs(argv: string[]): Args {
         break;
       case 'complete':
         args.completeArg = (value as Rarity) ?? 'all';
+        break;
+      case 'rates':
+      case 'pull-rates':
+      case 'odds':
+        args.ratesArg = (value as Rarity) ?? 'all';
         break;
       case 'copy':
         args.copyText = true;
@@ -434,6 +441,70 @@ function renderComplete(set: SetDefinition, only: Rarity | undefined): void {
   console.log(`  a uniform-random opener would expect ~${est} packs for that slot (coupon-collector).`);
 }
 
+/**
+ * Pull-rate table: the real per-pack odds each card has under the collation
+ * model, grouped by how many times it's printed on the sheet. Measured
+ * exactly by scanning the full period of distinct packs. The point: a card's
+ * chance is proportional to its print count — a card printed 4× is 4× as
+ * likely as a singly-printed one — which flat per-card rarity odds miss.
+ */
+function renderRates(set: SetDefinition, only: Rarity | undefined): void {
+  const half: SheetHalf = 'A';
+  const N = packPeriod(set);
+  const packs = openPacks(set, N, { startPack: 0, half });
+
+  const rarities = (only ? [only] : [...perPackBySheet(set).keys()])
+    .filter((r) => set.sheets[r])
+    .sort((a, b) => RARITY_ORDER.indexOf(a) - RARITY_ORDER.indexOf(b));
+
+  console.log(`\n=== ${set.name} pull rates — measured over ${N} distinct packs ===`);
+
+  for (const rarity of rarities) {
+    const sheet = set.sheets[rarity] as Sheet;
+    const perPack = perPackBySheet(set).get(rarity) ?? 0;
+
+    // How many times each card is printed on the sheet.
+    const printed = new Map<string, number>();
+    for (const cell of sheet.cards) printed.set(label(cell), (printed.get(label(cell)) ?? 0) + 1);
+
+    // Appearances and packs-containing, measured across the period.
+    const appears = new Map<string, number>();
+    const inPack = new Map<string, number>();
+    for (const p of packs) {
+      const here = new Set<string>();
+      for (const c of p) {
+        if (c.fromSheet !== rarity) continue;
+        const L = label(c);
+        appears.set(L, (appears.get(L) ?? 0) + 1);
+        here.add(L);
+      }
+      for (const L of here) inPack.set(L, (inPack.get(L) ?? 0) + 1);
+    }
+
+    // Group by print count (skip cards that can't appear — e.g. the other half).
+    const tiers = new Map<number, { cards: number; prob: number; copies: number }>();
+    for (const [L, count] of printed) {
+      if (!inPack.has(L)) continue;
+      const t = tiers.get(count) ?? { cards: 0, prob: 0, copies: 0 };
+      t.cards += 1;
+      t.prob += (inPack.get(L) ?? 0) / N;
+      t.copies += (appears.get(L) ?? 0) / N;
+      tiers.set(count, t);
+    }
+
+    const split = set.splitSheets?.[rarity] ? ' (half A)' : '';
+    console.log(`\n  ${rarity} sheet${split} — ${sheet.rows * sheet.cols} cells, ${perPack} drawn/pack`);
+    console.log('    printed   cards   chance/pack   avg copies/pack');
+    for (const count of [...tiers.keys()].sort((a, b) => a - b)) {
+      const t = tiers.get(count) as { cards: number; prob: number; copies: number };
+      const chance = ((t.prob / t.cards) * 100).toFixed(1) + '%';
+      const copies = (t.copies / t.cards).toFixed(3);
+      console.log(`    ${(count + '×').padStart(5)}   ${String(t.cards).padStart(5)}   ${chance.padStart(9)}   ${copies.padStart(13)}`);
+    }
+  }
+  console.log('\n  → flat per-card odds treat every card as equal; collation makes the chance scale with print count.');
+}
+
 // --- clipboard -------------------------------------------------------------
 
 function copyToClipboard(text: string, what: string): void {
@@ -557,6 +628,8 @@ options:
                       proving the collation is lossless and deterministic
   --complete[=rar]    how many consecutive packs to see every distinct card
                       (fixed, vs a random opener's coupon-collector estimate)
+  --rates[=rar]       per-pack pull rates grouped by print count, showing
+                      odds scale with how many times a card is printed
   --copy              copy the pack to the clipboard as text
   --copy-json         copy the pack to the clipboard as JSON
   --find="a, b, …"    reverse lookup: find which pack these cards came from
@@ -646,6 +719,15 @@ function main(): void {
       console.log(`\n("complete the set" supports striped collation only; ${set.name} is ${set.collation})`);
     } else {
       renderComplete(set, args.completeArg === 'all' ? undefined : args.completeArg);
+    }
+  }
+
+  // Pull-rate table --------------------------------------------------------
+  if (args.ratesArg !== undefined) {
+    if (!striped) {
+      console.log(`\n(pull rates support striped collation only; ${set.name} is ${set.collation})`);
+    } else {
+      renderRates(set, args.ratesArg === 'all' ? undefined : args.ratesArg);
     }
   }
 

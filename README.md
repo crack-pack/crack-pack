@@ -88,6 +88,7 @@ npm run demo lea --neighbours     # show packs N-1/N/N+1 as one continuous run
 npm run demo lea --find="Timetwister, Psionic Blast"  # which pack was this?
 npm run demo lea --reconstruct    # rebuild the whole sheet from packs alone
 npm run demo lea --complete       # packs needed to see every card (vs random)
+npm run demo atq --rates          # per-pack pull rates by print count
 npm run demo lea --copy           # copy the pack to the clipboard (--copy-json for JSON)
 npm run demo --help               # all options
 ```
