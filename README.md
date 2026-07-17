@@ -79,21 +79,8 @@ const box = openPacks(lea, 36, { seed: 42 });  // 36 correlated packs, reproduci
 Runs on Node 22.18+ with no build step (native TypeScript type-stripping):
 
 ```sh
-npm test                          # sheet + collation tests
-npm run demo 42                   # open an Alpha pack, seeded
-npm run demo mir 42               # any set by code
-npm run demo lea --start-pack=0   # the canonical first-ever pack (Timetwister)
-npm run demo ice --sheet          # draw the sheet with the pack's walk marked on it
-npm run demo lea --neighbours     # show packs N-1/N/N+1 as one continuous run
-npm run demo lea --find="Timetwister, Psionic Blast"  # which pack was this?
-npm run demo lea --reconstruct    # rebuild the whole sheet from packs alone
-npm run demo lea --complete       # packs needed to see every card (vs random)
-npm run demo atq --rates          # per-pack pull rates by print count
-npm run demo mir --diff=orientation  # what a provisional assumption changes
-npm run demo lea --card="Serra Angel"  # its sheet cell(s) and which packs
-npm run demo lea --csv > box.csv  # dump a box as CSV for spreadsheets
-npm run demo lea --copy           # copy the pack to the clipboard (--copy-json for JSON)
-npm run demo --help               # all options
+npm test          # sheet + collation tests
+npm run demo 42   # open a pack
 ```
 
 ## Data & validation
