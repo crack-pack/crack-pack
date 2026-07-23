@@ -1,6 +1,6 @@
 {
   "name": "crack-pack",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "A Magic: The Gathering pack-collation simulator — as realistic as the available print-sheet data allows (see ASSUMPTIONS.md; contributions welcome)",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "engines": {
     "node": ">=20.10"
@@ -24,7 +26,14 @@
     "demo": "node examples/open-a-pack.ts",
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
-  "keywords": ["mtg", "magic-the-gathering", "collation", "packs", "simulation", "booster"],
+  "keywords": [
+    "mtg",
+    "magic-the-gathering",
+    "collation",
+    "packs",
+    "simulation",
+    "booster"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/crack-pack/crack-pack.git"
