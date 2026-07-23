@@ -46,6 +46,7 @@ assumption made, and how you could help. See the per-set sections below for more
 | `drk` — The Dark (1994) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — all sheets `[2,3,4,5]` | ✅ validated | [🔴 simplified](docs/drk.md) (real collation varies per box) |
 | `fem` — Fallen Empires (1994) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — all sheets `[2,3,4,5]` | ✅ validated | [🔴 simplified](docs/fem.md) (uncommon split varies per box) |
 | `ice` — Ice Age (1995) | rare 11×11 · uncommon 11×11 · common 11×11 | striped — all sheets `[2,3,4,5]` | ✅ validated (rare [hand-transcribed](docs/ice.md)) | [🔴 provisional](docs/ice.md) |
+| `hml` — Homelands (1995) | uncommon 11×11 · common 11×11 (no rare sheet) | striped — assumed `[2,3,4,5]` | ✅ validated ([hand-transcribed](docs/hml.md)) | [🔴 provisional](docs/hml.md) |
 | `mir` — Mirage (1996) | rare 10×11 · uncommon 10×11 · common 10×11 | striped — all sheets `[2,3,4,5]` (Belgian printing; **10×11 orientation assumed**) | ✅ validated (Belgian) | [🔴 provisional](docs/mir.md) |
 
 ---
@@ -128,6 +129,13 @@ assumption made, and how you could help. See the per-set sections below for more
 - 🔴 **Stripe cycle** `[2,3,4,5]` assumed; the source notes variable collation (some boxes split the first common sheet top-5/bottom-6; width-1 stripes observed).
 - 🟡 Two common-sheet printings exist; only version 1 is modelled.
 
+### `hml` — Homelands (1995)
+- ✅ Grids (2 × 11×11, **no rare**): common 71 printings (21×C1 + 50×C2, over 46 base cards); uncommon 69 (26 true-uncommons at U3 ×3 + 43 de-facto rares at U1 ×1). Hand-transcribed from uncut-sheet photos on [magiclibrarities.net](https://www.magiclibrarities.net/) (The Collation Project has no Homelands page), validated by collector number and by rarity colour-balance against MTGJSON.
+- ✅ 25 commons have two versions, kept verbatim as `(A)`/`(B)`; basic lands are on a separate land sheet (not in boosters).
+- ✅ Pack: 8 cards = 6 commons + 2 uncommons; 847 distinct packs.
+- 🟡 **Sengir Autocrat rarity:** MTGJSON/Scryfall label it uncommon, but colour-balance (every colour is 4 uncommon / 8 rare except Black at 5 / 7) plus the sheet frequency (appears once) make it a U1 de-facto rare. Reported upstream ([mtgjson/mtgjson#1687](https://github.com/mtgjson/mtgjson/issues/1687)); crack-pack derives rarity from sheet frequency, so it's modelled correctly.
+- 🔴 **Stripe cycle** `[2,3,4,5]` assumed (Belgian/Carta Mundi printing; no width data). Card grids validated; the collation walk is assumed, and positions rest on a manual photo read.
+
 ### `mir` — Mirage (1996)
 - ✅ Grids (3 × 10×11, 110 distinct each): common, uncommon, and rare are all real sheet data. Basic lands (four art variations) are not in boosters, so these are pure card grids.
 - 🟡 **Belgian printing modelled.** Mirage had two printings — US (*sequential*, four common runs with variable splits) and Belgian (*striped*). We model the Belgian striped one; the engine doesn't implement sequential collation. Common + uncommon are the Belgian sheets; the rare grid is the single rare sheet the source shows (listed under the US section) — real 110-rare data.
@@ -141,5 +149,6 @@ assumption made, and how you could help. See the per-set sections below for more
 - **`atq` stripe widths** — determine the real per-sheet width sequence from a box-opening video, then update `src/sets/atq/index.ts`.
 - **`leg` uncommon split + stripe widths** — determine the true grid orientation / half boundary and stripe widths from three box openings, then update `src/sets/leg/index.ts` (and the demo).
 - **`ice` rare positions** — the rare grid is hand-transcribed from an uncut-sheet photo (the Collation Project page lacks it); the card set is verified but individual positions could use confirmation against a clearer scan or box-opening data.
+- **`hml` stripe widths** — Homelands' per-sheet stripe cycle is assumed `[2,3,4,5]` (Belgian/Carta Mundi; no width data). Card grids are validated (hand-transcribed from magiclibrarities.net); confirm the real widths and positions from a box opening / clearer scan.
 
 When a provisional item is validated, correct the set definition, flip its status here, and cut a release.

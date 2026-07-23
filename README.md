@@ -17,7 +17,7 @@ is a correlated run of cards and a box is not N independent packs.
 
 ## Sets
 
-Twelve sets, from Alpha (1993) through Mirage (1996). For each set's exact
+Thirteen sets, from Alpha (1993) through Mirage (1996). For each set's exact
 per-sheet structure and how confident we are in its collation (validated /
 assumed / simplified / placeholder), see the **[status matrix in
 ASSUMPTIONS.md](./ASSUMPTIONS.md#status-matrix)**.
@@ -35,6 +35,7 @@ ASSUMPTIONS.md](./ASSUMPTIONS.md#status-matrix)**.
 | `drk` | The Dark (1994) |
 | `fem` | Fallen Empires (1994) |
 | `ice` | Ice Age (1995) |
+| `hml` | Homelands (1995) |
 | `mir` | Mirage (1996) |
 
 ## Core model
@@ -103,6 +104,7 @@ sheet positions and the 14-sheet period (`test/collation-model.test.ts`).
 - The Dark is like Arabian Nights/Antiquities: no rare sheet, rarity by repeat count (common: 40×C3 + Maze of Ith ×1; uncommon: 43×U2 + 35×U1, both checksum-validated). Its real collation is **variable per box** (sheets may or may not split, with 2–3 independent common sequences, or width-7 stripes when unsplit), so it can't be reproduced deterministically — we model it as a plain two-sheet striped set with an assumed `[2,3,4,5]` cycle. The grids are validated; the pack grouping is a deliberate simplification.
 - Fallen Empires: no rare sheet (common: 15×C4 + 20×C3 + Delif's Cone ×1; uncommon: 25×U3 + 5×U2 + 36×U1, checksum-validated). Its commons are **multi-art** — a common has a distinct artwork for each time it appears (C4 → four, C3 → three), notated `(A)`–`(D)`. Like The Dark, the uncommon sheet may or may not split per box, so collation is simplified to a plain two-sheet striped model with an assumed `[2,3,4,5]` cycle.
 - Ice Age (121 commons / 121 uncommons / 121 rares) has **real** sheet data for all three rarities. The common and uncommon sheets come from the Collation Project; the **rare sheet was transcribed by hand** from a photo of the uncut rare sheet on [magiclibrarities.net](https://www.magiclibrarities.net/) (the Collation Project page has no rare-sheet gallery), validated so all 121 rares appear exactly once, with positions eyeballed against the photo. Its individual rare *positions* rest on a manual read of a photograph, so a small number could be off by a cell — corrections welcome. Basic/snow-covered lands are on a separate land sheet and don't appear in boosters. Common uses "version 1" of two printings; stripe cycle `[2,3,4,5]` assumed.
+- Homelands (two 11×11 sheets, no rare — rarity emergent from repeat count: commons 21×C1 + 50×C2 across 46 base cards; uncommons 26 true-uncommons ×3 + 43 de-facto rares ×1). Sheet data was **hand-transcribed from uncut-sheet photos on [magiclibrarities.net](https://www.magiclibrarities.net/)** (the Collation Project has no Homelands page) and validated by collector number and by rarity colour-balance against MTGJSON. 25 commons have two versions, kept verbatim as `(A)`/`(B)`; basic lands are on a separate land sheet (not in boosters). MTGJSON/Scryfall mislabels Sengir Autocrat as uncommon — it's a de-facto rare (U1), reported upstream; our frequency-based model treats it correctly. **Stripe cycle assumed `[2,3,4,5]`** (Belgian/Carta Mundi printing; no width data available).
 - Mirage (110 commons / 110 uncommons / 110 rares, all real grids) had two printings — a US *sequential* one (four common runs) and a Belgian *striped* one. We model the **Belgian striped** printing; the engine now supports sequential collation, but the US printing's multi-run, probabilistic-split assembly isn't modelled yet. Sheets are **10×11** (non-square), so the walk depends on row/column orientation, which the source doesn't pin down — we assume 10 rows × 11 columns. Stripe cycle `[2,3,4,5]` assumed. Basic lands (four variations) aren't in boosters.
 
 See [ASSUMPTIONS.md](./ASSUMPTIONS.md) for the full list of modelling assumptions and their validation status.
@@ -116,7 +118,7 @@ approximating, please **[open an issue or PR](https://github.com/crack-pack/crac
 
 Particularly wanted (see [ASSUMPTIONS.md](./ASSUMPTIONS.md) for details):
 
-- **Missing sheets** — any set's sheets not yet on [The Collation Project](https://www.lethe.xyz/mtg/collation/) (e.g. Chronicles, Homelands, Alliances).
+- **Missing sheets** — any set's sheets not yet on [The Collation Project](https://www.lethe.xyz/mtg/collation/) (e.g. Chronicles, Alliances). _(Homelands is now covered — hand-transcribed from magiclibrarities.net.)_
 - **Stripe-width sequences** — the real per-sheet widths for **Antiquities**, **Legends**, **The Dark**, **Fallen Empires**, **Mirage** (currently assumed).
 - **Collation specifics** — e.g. the **Legends** uncommon half-split orientation, and the **Mirage US** sequential multi-run splits.
 - **Anything** — corrections, box-opening footage, or physical-sheet scans that can validate or refine a set.
